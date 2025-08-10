@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canvas X - Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: sans-serif; background-color: #111827; color: white; }
+    </style>
+</head>
+<body class="p-8">
+    <div class="container mx-auto">
+        <h1 class="text-3xl font-bold mb-6">Canvas X 관리자 대시보드</h1>
+        
+        <div id="pending-ads-container" class="space-y-4">
+            <!-- 승인 대기 중인 광고가 여기에 표시됩니다. -->
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:3001';
+
+        async function fetchPendingAds() {
+            const container = document.getElementById('pending-ads-container');
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/admin/pending-ads`);
+                if (!response.ok) throw new Error(`Server responded with status: ${response.status}`);
+                const ads = await response.json();
+
+                if (ads.length === 0) {
+                    container.innerHTML = '<p class="text-gray-400">승인 대기 중인 광고가 없습니다.</p>';
+                    return;
+                }
+
+                container.innerHTML = ads.map(ad => `
+                    <div class="bg-gray-800 p-4 rounded-lg flex items-center justify-between">
+                        <div>
+                            <p class="font-bold">게시일: ${ad.auction_id}</p>
+                            <p class="text-sm text-gray-400">소유자 ID: ${ad.owner_id}</p>
+                            <a href="${API_BASE_URL}${ad.content_url}" target="_blank" class="text-blue-400 hover:underline">광고 미리보기</a>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button onclick="updateAdStatus(${ad.id}, 'approved')" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">승인</button>
+                            <button onclick="updateAdStatus(${ad.id}, 'rejected')" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">거절</button>
+                        </div>
+                    </div>
+                `).join('');
+
+            } catch (error) {
+                console.error('Error fetching pending ads:', error);
+                container.innerHTML = `<p class="text-red-500">광고를 불러오는 중 오류가 발생했습니다. 백엔드 서버가 실행 중인지 확인해주세요.</p>`;
+            }
+        }
+
+        async function updateAdStatus(adId, status) {
+            if (!confirm(`이 광고를 '${status}' 상태로 변경하시겠습니까?`)) return;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/admin/ad-content/${adId}/status`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ newStatus: status })
+                });
+
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.message);
+
+                alert(result.message);
+                fetchPendingAds(); // 목록 새로고침
+
+            } catch (error) {
+                console.error('Error updating ad status:', error);
+                alert(`상태 변경 실패: ${error.message}`);
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', fetchPendingAds);
+    </script>
+</body>
+</html>
