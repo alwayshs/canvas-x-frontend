@@ -187,7 +187,7 @@
   const password = document.getElementById('signup-password').value;
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/signup`, {
+    const response = await fetch(`${API_BASE_URL}/api/users/signup`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ nickname, email, password }),
@@ -382,5 +382,6 @@
     </script>
 </body>
 </html>
+
 
 
