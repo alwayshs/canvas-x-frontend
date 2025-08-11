@@ -652,6 +652,14 @@
         window.scrollTo(0, 0);
     }
 
+    function showAdminPage() {
+        mainView.classList.add('hidden');
+        auctionPageView.classList.add('hidden');
+        dashboardView.classList.add('hidden');
+        adminPageView.classList.remove('hidden');
+        window.scrollTo(0, 0);
+    }
+
     function updateAuctionDetails(auction, bids) {
         document.getElementById('auction-current-bid').textContent = `₩${(auction.current_highest_bid || 0).toLocaleString()}`;
         const bidHistoryEl = document.getElementById('auction-bid-history');
@@ -753,6 +761,7 @@
 </script>
 </body>
 </html>
+
 
 
 
