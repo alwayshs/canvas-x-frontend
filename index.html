@@ -553,7 +553,7 @@
             `;
 
             // 관리자일 때만 관리자 페이지 버튼 추가
-            if (loggedInUser.is_admin) {
+            if (loggedInUser.isAdmin) {
                 html = `
                     <div class="flex items-center space-x-4">
                         <button data-action="show-dashboard" class="text-sm text-gray-300 hover:text-white">My Page</button>
@@ -750,4 +750,5 @@
 </script>
 </body>
 </html>
+
 
