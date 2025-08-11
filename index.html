@@ -702,7 +702,9 @@
         auctionPageView.classList.add('hidden');
         dashboardView.classList.add('hidden');
         adminPageView.classList.remove('hidden');
-        window.scrollTo(0, 0);
+        requestAnimationFrame(() => {
+            window.scrollTo(0, 0);
+          });
     }
 
     function updateAuctionDetails(auction, bids) {
@@ -806,6 +808,7 @@
 </script>
 </body>
 </html>
+
 
 
 
