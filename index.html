@@ -679,6 +679,7 @@
         } catch (error) {
             alert('경매 정보를 불러오는 데 실패했습니다.');
         }
+        setupHeaderVisibility();
     }
 
     function showMainView() {
@@ -687,6 +688,7 @@
         auctionPageView.classList.add('hidden');
         dashboardView.classList.add('hidden');
         populateUpcomingAuctions();
+        setupHeaderVisibility();
     }
 
     function showDashboard() {
@@ -695,6 +697,7 @@
         dashboardView.classList.remove('hidden');
         // populateWonAuctions(); // 나중에 추가 가능
         window.scrollTo(0, 0);
+        setupHeaderVisibility();
     }
 
     function showAdminPage() {
@@ -704,7 +707,8 @@
         adminPageView.classList.remove('hidden');
         requestAnimationFrame(() => {
             window.scrollTo(0, 0);
-          });
+        });
+        setupHeaderVisibility();
     }
 
     function updateAuctionDetails(auction, bids) {
@@ -818,6 +822,7 @@
 </script>
 </body>
 </html>
+
 
 
 
