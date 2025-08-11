@@ -312,6 +312,17 @@
 
   const bidAmountInput = document.getElementById('bid-amount');
   const amount = parseInt(bidAmountInput.value, 10);
+  if (isNaN(amount)) {
+    alert('입찰 금액을 정확히 입력해주세요.');
+    return;
+  }
+
+  // 최소 입찰 금액 계산 (현재 최고가 + 10000)
+  const minBid = parseInt(bidAmountInput.placeholder, 10);
+  if (amount < minBid) {
+    alert(`입찰 금액은 최소 ₩${minBid.toLocaleString()} 이상이어야 합니다.`);
+    return;
+  }
 
   try {
     const response = await fetch(`${API_BASE_URL}/api/auctions/${activeAuctionId}/bid`, {
@@ -382,6 +393,7 @@
     </script>
 </body>
 </html>
+
 
 
 
