@@ -762,13 +762,16 @@
         const header = document.querySelector('.header');
 
         if (mainView && header) {
-            // 메인 화면일 때만 스크롤 이벤트 활성화
-            window.addEventListener('scroll', () => {
-                if (window.scrollY > 50) header.classList.add('header-visible');
-                else header.classList.remove('header-visible');
-            });
-        } else if (mainView.classList.contains('hidden')) {
-            header.classList.add('header-visible');
+            if (!mainView.classList.contains('hidden')) {
+                // 메인 화면일 때만 스크롤 이벤트 활성화
+                window.addEventListener('scroll', () => {
+                    if (window.scrollY > 50) header.classList.add('header-visible');
+                    else header.classList.remove('header-visible');
+                });
+            } else {
+                // 메인화면이 숨겨져 있을 때 (관리자 페이지 등)
+                header.classList.add('header-visible');
+            }
         }
     }
 
@@ -814,6 +817,7 @@
 </script>
 </body>
 </html>
+
 
 
 
