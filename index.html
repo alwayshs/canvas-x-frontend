@@ -565,6 +565,22 @@
         }
     }
 
+    async function fetchWithAuth(url, options = {}) {
+        const token = localStorage.getItem('token');
+        options.headers = options.headers || {};
+        if (token) options.headers['Authorization'] = `Bearer ${token}`;
+
+        const response = await fetch(url, options);
+
+        if (response.status === 401 || response.status === 403) {
+          alert('세션이 만료되었습니다. 다시 로그인 해주세요.');
+          handleLogout();
+          throw new Error('Unauthorized');
+        }
+
+        return response;
+    }
+
     function handleLogout() {
         loggedInUser = null;
         localStorage.removeItem('token');
@@ -790,6 +806,7 @@
 </script>
 </body>
 </html>
+
 
 
 
