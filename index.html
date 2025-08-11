@@ -149,19 +149,66 @@
         function closeAuthModal() { authModal.classList.add('hidden'); }
         
         async function handleLogin(event) {
-            event.preventDefault();
-            loggedInUser = { nickname: 'MockUser' };
-            alert(`Welcome back, ${loggedInUser.nickname}!`);
-            updateAuthState();
-            closeAuthModal();
+          event.preventDefault();
+
+          const email = document.getElementById('login-email').value;
+          const password = document.getElementById('login-password').value;
+
+          try {
+            const response = await fetch(`${API_BASE_URL}/api/login`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email, password }),
+            });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.message || '로그인 실패');
         }
+
+    // 서버에서 받은 유저 정보 (id, nickname 등)
+    loggedInUser = data.user;
+
+    alert(`환영합니다, ${loggedInUser.nickname}님!`);
+    updateAuthState();
+    closeAuthModal();
+
+  } catch (error) {
+    alert(`로그인 실패: ${error.message}`);
+  }
+}
+
         async function handleSignup(event) {
-            event.preventDefault();
-            loggedInUser = { nickname: document.getElementById('signup-nickname').value };
-            alert(`Welcome, ${loggedInUser.nickname}!`);
-            updateAuthState();
-            closeAuthModal();
-        }
+  event.preventDefault();
+
+  const nickname = document.getElementById('signup-nickname').value;
+  const email = document.getElementById('signup-email').value;
+  const password = document.getElementById('signup-password').value;
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/signup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nickname, email, password }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || '회원가입 실패');
+    }
+
+    loggedInUser = data.user;
+
+    alert(`가입을 축하합니다, ${loggedInUser.nickname}님!`);
+    updateAuthState();
+    closeAuthModal();
+
+  } catch (error) {
+    alert(`회원가입 실패: ${error.message}`);
+  }
+}
         function handleLogout() {
             loggedInUser = null;
             alert('로그아웃되었습니다.');
@@ -258,27 +305,33 @@
         }
 
         async function handlePlaceBid() {
-            if (!loggedInUser) {
-                alert('입찰을 위해서는 로그인이 필요합니다.');
-                return openAuthModal('login');
-            }
-            const bidAmountInput = document.getElementById('bid-amount');
-            const amount = parseInt(bidAmountInput.value, 10);
-            try {
-                const response = await fetch(`${API_BASE_URL}/api/auctions/${activeAuctionId}/bid`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userId: loggedInUser.nickname, amount })
-                });
-                const result = await response.json();
-                if (!response.ok) throw new Error(result.message);
-                alert('입찰에 성공했습니다!');
-                bidAmountInput.value = '';
-                showAuctionPage(activeAuctionId);
-            } catch (error) {
-                alert(`입찰 실패: ${error.message}`);
-            }
-        }
+  if (!loggedInUser) {
+    alert('입찰을 위해서는 로그인이 필요합니다.');
+    return openAuthModal('login');
+  }
+
+  const bidAmountInput = document.getElementById('bid-amount');
+  const amount = parseInt(bidAmountInput.value, 10);
+
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/auctions/${activeAuctionId}/bid`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId: loggedInUser.id, amount })
+    });
+
+    const result = await response.json();
+
+    if (!response.ok) throw new Error(result.message || '입찰 실패');
+
+    alert('입찰에 성공했습니다!');
+    bidAmountInput.value = '';
+    showAuctionPage(activeAuctionId);
+
+  } catch (error) {
+    alert(`입찰 실패: ${error.message}`);
+  }
+}
         
         function setupHeaderVisibility() {
             const header = document.querySelector('#main-view .header');
@@ -329,3 +382,4 @@
     </script>
 </body>
 </html>
+
