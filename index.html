@@ -199,7 +199,7 @@
       throw new Error(data.message || '회원가입 실패');
     }
 
-    loggedInUser = data.user;
+    loggedInUser = data;
 
     alert(`가입을 축하합니다, ${loggedInUser.nickname}님!`);
     updateAuthState();
@@ -382,6 +382,7 @@
     </script>
 </body>
 </html>
+
 
 
 
