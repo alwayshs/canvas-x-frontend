@@ -52,6 +52,7 @@
         document.addEventListener('DOMContentLoaded', initializePage);
         
         function initializePage() {
+            checkLoginStatus();
             renderStaticContent();
             attachEventListeners();
             checkTodaysAd();
@@ -68,7 +69,6 @@
                         <nav class="hidden md:flex items-center space-x-8">
                             <a href="#how-it-works" class="hover:text-gray-300">How It Works</a>
                             <a href="#archive" class="hover:text-gray-300">The Archive</a>
-                            <button id="adminBtn" style="display:none" onclick="window.location.href='admin.html'">Admin</button>
                         </nav>
                         <div id="auth-container"></div>
                     </div>
@@ -122,6 +122,7 @@
                     case 'show-auction-page': showAuctionPage(actionTarget.dataset.auctionId); break;
                     case 'place-bid': handlePlaceBid(); break;
                     case 'show-dashboard': showDashboard(); break;
+                    case 'show-admin-page': window.open('admin.html', '_blank'); break;
                     case 'logout': handleLogout(); break;
                 }
             });
@@ -133,12 +134,22 @@
         }
 
         async function api(endpoint, options = {}) {
+            const token = localStorage.getItem('accessToken');
+            const headers = {
+                'Content-Type': 'application/json',
+                ...options.headers,
+            };
+
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
             try {
-                const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
                 const isJson = response.headers.get('content-type')?.includes('application/json');
                 const data = isJson ? await response.json() : await response.text();
                 if (!response.ok) {
-                    throw new Error(data.message || data || '서버와 통신 중 오류가 발생했습니다.');
+                    throw new Error(data.message || '서버와 통신 중 오류가 발생했습니다.');
                 }
                 return data;
             } catch (error) {
@@ -167,7 +178,11 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
                 });
+                
+                localStorage.setItem('accessToken', data.accessToken);
+                localStorage.setItem('userInfo', JSON.stringify(data.user));
                 loggedInUser = data.user;
+
                 alert(data.message);
                 updateAuthState();
                 closeAuthModal();
@@ -194,6 +209,8 @@
             }
         }
         function handleLogout() {
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('userInfo');
             loggedInUser = null;
             alert('로그아웃되었습니다.');
             updateAuthState();
@@ -202,9 +219,26 @@
         function updateAuthState() {
             const authContainer = document.getElementById('auth-container');
             if (loggedInUser) {
-                authContainer.innerHTML = `<div class="flex items-center space-x-4"><button data-action="show-dashboard" class="text-sm text-gray-300 hover:text-white">My Page</button><button data-action="logout" class="bg-gray-700 text-white font-bold py-2 px-5 rounded-full text-sm">Logout</button></div>`;
+                let adminButton = '';
+                if (loggedInUser.is_admin) {
+                    adminButton = `<button data-action="show-admin-page" class="text-sm text-yellow-400 hover:text-yellow-300">Admin</button>`;
+                }
+                authContainer.innerHTML = `
+                    <div class="flex items-center space-x-4">
+                        ${adminButton}
+                        <button data-action="show-dashboard" class="text-sm text-gray-300 hover:text-white">My Page</button>
+                        <button data-action="logout" class="bg-gray-700 text-white font-bold py-2 px-5 rounded-full text-sm">Logout</button>
+                    </div>`;
             } else {
                 authContainer.innerHTML = `<button data-action="open-auth" id="auth-button" class="bg-white text-black font-bold py-2 px-5 rounded-full text-sm btn-primary transition">Login / Sign Up</button>`;
+            }
+        }
+        
+        function checkLoginStatus() {
+            const token = localStorage.getItem('accessToken');
+            const userInfo = localStorage.getItem('userInfo');
+            if (token && userInfo) {
+                loggedInUser = JSON.parse(userInfo);
             }
         }
 
@@ -258,7 +292,7 @@
             auctionPageView.classList.add('hidden');
             dashboardView.classList.add('hidden');
             populateUpcomingAuctions();
-            setupHeaderVisibility(); // 메인 뷰로 돌아올 때 스크롤 이벤트 다시 활성화
+            setupHeaderVisibility(); 
         }
 
         async function showDashboard() {
@@ -269,25 +303,6 @@
             await populateWonAuctions();
             window.scrollTo(0, 0);
         }
-
-        async function checkAdmin() {
-            try {
-              const res = await fetch('/api/user/login', {
-                headers: {
-                  'Authorization': 'Bearer ' + localStorage.getItem('token')
-                }
-              });
-              if (!res.ok) throw new Error('No auth');
-              const data = await res.json();
-              if (data.isAdmin) {
-                document.getElementById('adminBtn').style.display = 'inline-block';
-              }
-            } catch {
-              // 로그인 안 됐거나 관리자 아님
-            }
-          }
-
-          window.onload = checkAdmin;
 
         async function populateWonAuctions() {
             const container = document.getElementById('won-auctions-list');
@@ -410,4 +425,3 @@
     </script>
 </body>
 </html>
-
