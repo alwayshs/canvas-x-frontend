@@ -98,9 +98,9 @@
 
             let url;
             if (status === 'approved') {
-                url = `/api/admin/ads/${adId}/approve`;
+                url = `/api/admin/ad-content/${adId}/approve`;
             } else if (status === 'rejected') {
-                url = `/api/admin/ads/${adId}/reject`;
+                url = `/api/admin/ad-content/${adId}/reject`;
             } else {
                 alert('알 수 없는 상태입니다.');
                 return;
@@ -119,5 +119,6 @@
     </script>
 </body>
 </html>
+
 
 
