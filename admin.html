@@ -7,13 +7,21 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { font-family: sans-serif; background-color: #111827; color: white; }
+        .header-blur { backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); background-color: rgba(0, 0, 0, 0.5); }
     </style>
 </head>
-<body class="p-8">
+<body class="pt-20">
+    <header class="fixed top-0 left-0 right-0 z-50 header-blur">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-black tracking-wider">CANVAS X - ADMIN</h1>
+            <a href="index.html" target="_blank" class="text-gray-300 hover:text-white">Go to Main Site &rarr;</a>
+        </div>
+    </header>
+
     <div class="container mx-auto">
-        <h1 class="text-3xl font-bold mb-6">Canvas X 관리자 대시보드</h1>
+        <h1 class="text-3xl font-bold mb-6">승인 대기 광고 목록</h1>
         
-        <div id="pending-ads-container" class="space-y-4">
+        <div id="ads-container" class="space-y-4">
             <!-- 승인 대기 중인 광고가 여기에 표시됩니다. -->
         </div>
     </div>
@@ -21,12 +29,45 @@
     <script>
         const API_BASE_URL = 'https://canvas-x.onrender.com'; // 당신의 Render 서버 주소
 
-        async function fetchPendingAds() {
-            const container = document.getElementById('pending-ads-container');
+        // API 요청을 보내는 공통 함수 (인증 토큰 포함)
+        async function api(endpoint, options = {}) {
+            const token = localStorage.getItem('accessToken');
+            const headers = {
+                'Content-Type': 'application/json',
+                ...options.headers,
+            };
+
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
             try {
-                const response = await fetch(`${API_BASE_URL}/api/admin/pending-ads`);
-                if (!response.ok) throw new Error(`Server responded with status: ${response.status}`);
-                const ads = await response.json();
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
+                const isJson = response.headers.get('content-type')?.includes('application/json');
+                const data = isJson ? await response.json() : await response.text();
+                if (!response.ok) {
+                    throw new Error(data.message || data || '서버와 통신 중 오류가 발생했습니다.');
+                }
+                return data;
+            } catch (error) {
+                console.error(`API Error on ${endpoint}:`, error);
+                throw error;
+            }
+        }
+
+
+        async function fetchPendingAds() {
+            const container = document.getElementById('ads-container');
+            const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+
+            // 관리자가 아니거나, 로그인을 안했으면 접근 차단
+            if (!userInfo || !userInfo.is_admin) {
+                container.innerHTML = '<p class="text-red-500">접근 권한이 없습니다. 메인 페이지에서 관리자 계정으로 로그인해주세요.</p>';
+                return;
+            }
+
+            try {
+                const ads = await api('/api/admin/pending-ads');
 
                 if (ads.length === 0) {
                     container.innerHTML = '<p class="text-gray-400">승인 대기 중인 광고가 없습니다.</p>';
@@ -48,8 +89,7 @@
                 `).join('');
 
             } catch (error) {
-                console.error('Error fetching pending ads:', error);
-                container.innerHTML = `<p class="text-red-500">광고를 불러오는 중 오류가 발생했습니다. 백엔드 서버가 실행 중인지 확인해주세요.</p>`;
+                container.innerHTML = `<p class="text-red-500">광고를 불러오는 중 오류가 발생했습니다: ${error.message}</p>`;
             }
         }
 
@@ -57,20 +97,15 @@
             if (!confirm(`이 광고를 '${status}' 상태로 변경하시겠습니까?`)) return;
 
             try {
-                const response = await fetch(`${API_BASE_URL}/api/admin/ad-content/${adId}/status`, {
+                const result = await api(`/api/admin/ad-content/${adId}/status`, {
                     method: 'PATCH',
-                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ newStatus: status })
                 });
-
-                const result = await response.json();
-                if (!response.ok) throw new Error(result.message);
 
                 alert(result.message);
                 fetchPendingAds(); // 목록 새로고침
 
             } catch (error) {
-                console.error('Error updating ad status:', error);
                 alert(`상태 변경 실패: ${error.message}`);
             }
         }
