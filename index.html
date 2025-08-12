@@ -1,848 +1,392 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Canvas X - The Stage for One</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Noto+Sans+KR:wght@400;700;900&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
-        html {
-            scroll-behavior: smooth;
-        }
-        body {
-            font-family: 'Inter', 'Noto Sans KR', sans-serif;
-            background-color: #000000;
-            color: #ffffff;
-            overflow-x: hidden;
-        }
-        .header {
-            transform: translateY(-100%);
-            transition: transform 0.3s ease-in-out;
-        }
-        .header-visible {
-            transform: translateY(0);
-        }
-        .header-blur {
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            background-color: rgba(0, 0, 0, 0.5);
-        }
-        .fullscreen-canvas {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            overflow: hidden;
-            background-color: #000;
-        }
-        .fullscreen-canvas img,
-        .fullscreen-canvas video {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        .hero-section {
-            height: 100vh;
-            position: relative;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-        .scroll-indicator {
-            position: absolute;
-            bottom: 2rem;
-            left: 50%;
-            transform: translateX(-50%);
-            animation: bounce 2s infinite;
-            opacity: 0.7;
-        }
-        @keyframes bounce {
-            0%,
-            20%,
-            50%,
-            80%,
-            100% {
-                transform: translateX(-50%) translateY(0);
-            }
-            40% {
-                transform: translateX(-50%) translateY(-20px);
-            }
-            60% {
-                transform: translateX(-50%) translateY(-10px);
-            }
-        }
-        .btn-primary:hover {
-            background-color: #ffffff;
-            color: #000000;
-            transform: scale(1.05);
-        }
-        .bid-history {
-            max-height: 200px;
-            overflow-y: auto;
-        }
-        .archive-item {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-        }
-        .archive-item:hover {
-            transform: scale(1.05);
-            box-shadow: 0 0 25px rgba(255, 255, 255, 0.3);
-        }
-        input[type='number']::-webkit-inner-spin-button,
-        input[type='number']::-webkit-outer-spin-button {
-            -webkit-appearance: none;
-            margin: 0;
-        }
-        input[type='number'] {
-            -moz-appearance: textfield;
-        }
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.8);
-            z-index: 100;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            backdrop-filter: blur(10px);
-        }
-        .status-dot {
-            height: 8px;
-            width: 8px;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 8px;
-        }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Inter', 'Noto Sans KR', sans-serif; background-color: #000000; color: #ffffff; overflow-x: hidden; }
+        .header { transform: translateY(-100%); transition: transform 0.3s ease-in-out; }
+        .header-visible { transform: translateY(0); }
+        .header-blur { backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); background-color: rgba(0, 0, 0, 0.5); }
+        .fullscreen-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; overflow: hidden; background-color: #000; }
+        .fullscreen-canvas img, .fullscreen-canvas video { width: 100%; height: 100%; object-fit: cover; }
+        .hero-section { height: 100vh; position: relative; display: flex; justify-content: center; align-items: center; }
+        .scroll-indicator { position: absolute; bottom: 2rem; left: 50%; transform: translateX(-50%); animation: bounce 2s infinite; opacity: 0.7; }
+        @keyframes bounce { 0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); } 40% { transform: translateX(-50%) translateY(-20px); } 60% { transform: translateX(-50%) translateY(-10px); } }
+        .btn-primary:hover { background-color: #ffffff; color: #000000; transform: scale(1.05); }
+        .bid-history { max-height: 200px; overflow-y: auto; }
+        .archive-item { transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .archive-item:hover { transform: scale(1.05); box-shadow: 0 0 25px rgba(255, 255, 255, 0.3); }
+        input[type=number]::-webkit-inner-spin-button, 
+        input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.8); z-index: 100; display: flex; justify-content: center; align-items: center; backdrop-filter: blur(10px); }
+        .status-dot { height: 8px; width: 8px; border-radius: 50%; display: inline-block; margin-right: 8px; }
     </style>
 </head>
 <body class="antialiased">
+
     <!-- Views (Main, Auction, Dashboard) -->
     <div id="main-view"></div>
     <div id="auction-page-view" class="hidden"></div>
     <div id="dashboard-view" class="hidden"></div>
     <div id="auth-modal" class="hidden modal-overlay"></div>
-    <div id="admin-page-view" class="hidden"></div>
 
-<script>
-    const API_BASE_URL = 'https://canvas-x.onrender.com';
-    let loggedInUser = null;
-    let activeAuctionId = null;
-    let auctionInterval;
+    <script>
+        const API_BASE_URL = 'https://canvas-x.onrender.com';
+        let loggedInUser = null; 
+        let activeAuctionId = null;
+        let auctionInterval;
 
-    // --- DOM ELEMENTS ---
-    const mainView = document.getElementById('main-view');
-    const auctionPageView = document.getElementById('auction-page-view');
-    const dashboardView = document.getElementById('dashboard-view');
-    const authModal = document.getElementById('auth-modal');
-    const adminPageView = document.getElementById('admin-page-view');
+        // --- DOM ELEMENTS ---
+        const mainView = document.getElementById('main-view');
+        const auctionPageView = document.getElementById('auction-page-view');
+        const dashboardView = document.getElementById('dashboard-view');
+        const authModal = document.getElementById('auth-modal');
 
-    // --- INITIALIZATION ---
-    document.addEventListener('DOMContentLoaded', async () => {
-        await fetchUserInfo();
-        initializePage();
-    });
-
-    async function fetchUserInfo() {
-        const token = localStorage.getItem('token');
-        if (!token) return;
-
-        try {
-            const res = await fetch(`${API_BASE_URL}/api/users/me`, {
-                headers: { Authorization: `Bearer ${token}` },
-            });
-            if (!res.ok) throw new Error('Failed to fetch user info');
-            loggedInUser = await res.json();
-        } catch (err) {
-            localStorage.removeItem('token');
-            loggedInUser = null;
+        // --- INITIALIZATION ---
+        document.addEventListener('DOMContentLoaded', initializePage);
+        
+        function initializePage() {
+            renderStaticContent();
+            attachEventListeners();
+            checkTodaysAd();
+            populateUpcomingAuctions();
+            setupHeaderVisibility();
+            updateAuthState();
         }
-        updateAuthState();
-    }
 
-    function initializePage() {
-        renderStaticContent();
-        attachEventListeners();
-        checkTodaysAd();
-        populateUpcomingAuctions();
-        setupHeaderVisibility();
-        updateAuthState();
-    }
-
-    function renderStaticContent() {
-        mainView.innerHTML = `
-            <header class="fixed top-0 left-0 right-0 z-50 header header-blur">
-                <div class="container mx-auto px-6 py-4 flex justify-between items-center">
-                    <a href="#" data-action="show-main-view" class="logo text-2xl font-black tracking-wider">CANVAS X</a>
-                    <nav class="hidden md:flex items-center space-x-8">
-                        <a href="#how-it-works" class="hover:text-gray-300">How It Works</a>
-                        <a href="#archive" class="hover:text-gray-300">The Archive</a>
-                    </nav>
-                    <div id="auth-container"></div>
-                </div>
-            </header>
-            <main>
-                <section class="hero-section">
-                    <div id="ad-visual-container" class="hidden w-full h-full">
-                        <div class="fullscreen-canvas">
-                            <img
-                                id="ad-image"
-                                src="https://images.unsplash.com/photo-1598992633995-1887545a1164?q=80&w=2940&auto=format&fit=crop"
-                                alt="Today's Canvas"
-                            />
+        function renderStaticContent() {
+            mainView.innerHTML = `
+                <header class="fixed top-0 left-0 right-0 z-50 header header-blur">
+                    <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+                        <a href="#" data-action="show-main-view" class="logo text-2xl font-black tracking-wider">CANVAS X</a>
+                        <nav class="hidden md:flex items-center space-x-8">
+                            <a href="#how-it-works" class="hover:text-gray-300">How It Works</a>
+                            <a href="#archive" class="hover:text-gray-300">The Archive</a>
+                        </nav>
+                        <div id="auth-container"></div>
+                    </div>
+                </header>
+                <main>
+                    <section class="hero-section">
+                        <div id="ad-visual-container" class="hidden w-full h-full">
+                            <div class="fullscreen-canvas"><img id="ad-image" src="https://images.unsplash.com/photo-1598992633995-1887545a1164?q=80&w=2940&auto=format&fit=crop" alt="Today's Canvas"></div>
+                            <a href="#details" class="scroll-indicator"><svg class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></a>
                         </div>
-                        <a href="#details" class="scroll-indicator">
-                            <svg
-                                class="w-8 h-8 text-white"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M19 9l-7 7-7-7"
-                                ></path>
-                            </svg>
-                        </a>
-                    </div>
-                    <div id="countdown-display-container" class="hidden text-center">
-                        <h2 class="text-2xl md:text-3xl text-gray-400 tracking-wider">NEXT CANVAS UNVEILS IN</h2>
-                        <div id="main-countdown" class="text-6xl md:text-9xl font-black tracking-tighter mt-4">00:00:00</div>
-                        <a href="#details" class="scroll-indicator">
-                            <svg
-                                class="w-8 h-8 text-white"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M19 9l-7 7-7-7"
-                                ></path>
-                            </svg>
-                        </a>
-                    </div>
-                </section>
-                <div id="details" class="bg-black relative z-10">
-                    <section id="canvas-info-section" class="hidden container mx-auto px-6 pt-16 pb-8 text-center"></section>
-                    <section id="auctions" class="bg-gray-900/50 py-20">
-                        <div class="container mx-auto px-6 text-center">
-                            <h2 class="text-3xl md:text-4xl font-bold">Upcoming Auctions</h2>
-                            <p class="mt-2 text-gray-400">다음 스토리를 소유할 기회를 잡으세요.</p>
-                            <div id="auction-list-container" class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8"></div>
+                        <div id="countdown-display-container" class="hidden text-center">
+                            <h2 class="text-2xl md:text-3xl text-gray-400 tracking-wider">NEXT CANVAS UNVEILS IN</h2>
+                            <div id="main-countdown" class="text-6xl md:text-9xl font-black tracking-tighter mt-4">00:00:00</div>
+                            <a href="#details" class="scroll-indicator"><svg class="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg></a>
                         </div>
                     </section>
-                    <section id="how-it-works" class="container mx-auto px-6 py-20"></section>
-                    <section id="archive" class="bg-gray-900/50 py-20"></section>
-                </div>
-            </main>
-            <footer class="border-t border-gray-800"></footer>
-        `;
-
-        auctionPageView.innerHTML = `
-            <header class="fixed top-0 left-0 right-0 z-50 header-blur header-visible">
-                <div class="container mx-auto px-6 py-4 flex justify-between items-center">
-                    <a href="#" data-action="show-main-view" class="logo text-2xl font-black tracking-wider">CANVAS X</a>
-                    <button data-action="show-main-view" class="back-to-main-btn text-gray-300 hover:text-white">&larr; Back to Main</button>
-                </div>
-            </header>
-            <div class="min-h-screen flex items-center justify-center pt-20">
-                <div class="w-full max-w-2xl bg-gray-900 border border-gray-700 rounded-lg p-8 m-4">
-                    <h1 class="text-3xl font-bold">Auction for Canvas X</h1>
-                    <p id="auction-date-title" class="text-xl text-gray-400 mb-6"></p>
-                    <div class="grid grid-cols-2 gap-4 text-center mb-6">
-                        <div>
-                            <p class="text-sm text-gray-500">현재 최고 입찰가</p>
-                            <p id="auction-current-bid" class="text-4xl font-bold"></p>
-                        </div>
-                        <div>
-                            <p class="text-sm text-gray-500">경매 마감</p>
-                            <p id="auction-time-left" class="text-4xl font-bold"></p>
-                        </div>
+                    <div id="details" class="bg-black relative z-10">
+                        <section id="canvas-info-section" class="hidden container mx-auto px-6 pt-16 pb-8 text-center"></section>
+                        <section id="auctions" class="bg-gray-900/50 py-20">
+                            <div class="container mx-auto px-6 text-center">
+                                <h2 class="text-3xl md:text-4xl font-bold">Upcoming Auctions</h2>
+                                <p class="mt-2 text-gray-400">다음 스토리를 소유할 기회를 잡으세요.</p>
+                                <div id="auction-list-container" class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-8"></div>
+                            </div>
+                        </section>
+                        <section id="how-it-works" class="container mx-auto px-6 py-20"></section>
+                        <section id="archive" class="bg-gray-900/50 py-20"></section>
                     </div>
-                    <div>
-                        <label for="bid-amount" class="block text-sm font-medium text-gray-400"></label>
-                        <div class="mt-1 flex rounded-md shadow-sm">
-                            <span
-                                class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-600 bg-gray-800 text-gray-300 sm:text-sm"
-                                >₩</span
-                            >
-                            <input
-                                type="number"
-                                id="bid-amount"
-                                class="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md bg-gray-800 border-gray-600"
-                            />
-                        </div>
-                    </div>
-                    <button
-                        data-action="place-bid"
-                        id="place-bid"
-                        class="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-md transition-all"
-                    >
-                        입찰하기
-                    </button>
-                    <div class="mt-8">
-                        <h2 class="text-lg font-bold mb-2">입찰 기록</h2>
-                        <div
-                            id="auction-bid-history"
-                            class="bid-history border border-gray-700 rounded-lg p-3 text-sm space-y-2"
-                        ></div>
-                    </div>
-                </div>
-            </div>
-        `;
-
-        authModal.innerHTML = `
-            <div
-                class="w-full max-w-md bg-gray-900 border border-gray-700 rounded-lg p-8 m-4 relative"
-            >
-                <button
-                    data-action="close-auth-modal"
-                    class="absolute top-4 right-4 text-gray-500 hover:text-white text-2xl"
-                >
-                    &times;
-                </button>
-                <div id="login-form">
-                    <h2 class="text-3xl font-bold text-center mb-6">Login</h2>
-                    <form id="login-form-element">
-                        <div class="mb-4">
-                            <label for="login-email" class="block text-sm font-medium text-gray-400"
-                                >Email</label
-                            >
-                            <input
-                                type="email"
-                                id="login-email"
-                                required
-                                class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md"
-                            />
-                        </div>
-                        <div class="mb-6">
-                            <label for="login-password" class="block text-sm font-medium text-gray-400"
-                                >Password</label
-                            >
-                            <input
-                                type="password"
-                                id="login-password"
-                                required
-                                class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md"
-                            />
-                        </div>
-                        <button
-                            type="submit"
-                            class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-md"
-                        >
-                            Login
-                        </button>
-                        <p class="text-center text-sm text-gray-400 mt-4">
-                            Don't have an account?
-                            <button
-                                type="button"
-                                data-action="toggle-auth-form"
-                                data-form-type="signup"
-                                class="font-medium text-indigo-400 hover:text-indigo-300"
-                            >
-                                Sign Up
-                            </button>
-                        </p>
-                    </form>
-                </div>
-                <div id="signup-form" class="hidden">
-                    <h2 class="text-3xl font-bold text-center mb-6">Sign Up</h2>
-                    <form id="signup-form-element">
-                        <div class="mb-4">
-                            <label for="signup-nickname" class="block text-sm font-medium text-gray-400"
-                                >Nickname</label
-                            >
-                            <input
-                                type="text"
-                                id="signup-nickname"
-                                required
-                                class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md"
-                            />
-                        </div>
-                        <div class="mb-4">
-                            <label for="signup-email" class="block text-sm font-medium text-gray-400"
-                                >Email</label
-                            >
-                            <input
-                                type="email"
-                                id="signup-email"
-                                required
-                                class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md"
-                            />
-                        </div>
-                        <div class="mb-6">
-                            <label for="signup-password" class="block text-sm font-medium text-gray-400"
-                                >Password</label
-                            >
-                            <input
-                                type="password"
-                                id="signup-password"
-                                required
-                                class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md"
-                            />
-                        </div>
-                        <button
-                            type="submit"
-                            class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-md"
-                        >
-                            Sign Up
-                        </button>
-                        <p class="text-center text-sm text-gray-400 mt-4">
-                            Already have an account?
-                            <button
-                                type="button"
-                                data-action="toggle-auth-form"
-                                data-form-type="login"
-                                class="font-medium text-indigo-400 hover:text-indigo-300"
-                            >
-                                Login
-                            </button>
-                        </p>
-                    </form>
-                </div>
-            </div>
-        `;
-
-        adminPageView.innerHTML = `
-            <header class="fixed top-0 left-0 right-0 z-50 header header-blur">
-              <div class="container mx-auto px-6 py-4 flex justify-between items-center">
-                <a href="#" data-action="show-main-view" class="logo text-2xl font-black tracking-wider">CANVAS X</a>
-                <nav class="hidden md:flex items-center space-x-8">
-                  <a href="#how-it-works" class="hover:text-gray-300">How It Works</a>
-                  <a href="#archive" class="hover:text-gray-300">The Archive</a>
-                </nav>
-                <div id="auth-container"></div>
-              </div>
-            </header>
-            <main class="pt-20 container mx-auto px-6">
-              <section class="py-12">
-                <h1 class="text-4xl font-bold mb-8">관리자 페이지</h1>
-                <section>
-                  <h2 class="text-2xl font-semibold mb-4">광고 승인 요청 목록</h2>
-                  <div id="admin-ad-approval-list" class="space-y-4">
-                    <!-- 승인 요청 리스트 출력 -->
-                  </div>
-                </section>
-              </section>
-            </main>
-            <footer class="border-t border-gray-800 mt-auto py-4 text-center text-gray-500">
-              &copy; 2025 CANVAS X. All rights reserved.
-            </footer>
-          `;
-    }
-
-    function attachEventListeners() {
-        // Header nav and auth container delegation
-        document.body.addEventListener('click', (e) => {
-            const action = e.target.dataset.action;
-            if (!action) return;
-
-            switch (action) {
-                case 'show-main-view':
-                    e.preventDefault();
-                    showMainView();
-                    break;
-                case 'open-auth':
-                    openAuthModal('login');
-                    break;
-                case 'logout':
-                    handleLogout();
-                    break;
-                case 'toggle-auth-form':
-                    openAuthModal(e.target.dataset.formType);
-                    break;
-                case 'show-dashboard':
-                    showDashboard();
-                    break;
-                case 'show-admin':
-                    showAdminPage();
-                    break;
-                case 'show-auction-page':
-                    showAuctionPage(e.target.dataset.auctionId);
-                    break;
-                case 'place-bid':
-                    handlePlaceBid();
-                    break;
-                case 'close-auth-modal':
-                    closeAuthModal();
-                    break;
-            }
-        });
-
-        // Login form submit
-        authModal.querySelector('#login-form-element').addEventListener('submit', handleLogin);
-        // Signup form submit
-        authModal.querySelector('#signup-form-element').addEventListener('submit', handleSignup);
-    }
-
-    // --- AUTH LOGIC ---
-    function openAuthModal(formType) {
-        authModal.classList.remove('hidden');
-        const loginForm = authModal.querySelector('#login-form');
-        const signupForm = authModal.querySelector('#signup-form');
-        loginForm.classList.toggle('hidden', formType !== 'login');
-        signupForm.classList.toggle('hidden', formType !== 'signup');
-    }
-    function closeAuthModal() {
-        authModal.classList.add('hidden');
-    }
-
-    async function handleLogin(event) {
-        event.preventDefault();
-
-        const email = document.getElementById('login-email').value;
-        const password = document.getElementById('login-password').value;
-
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/users/login`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, password }),
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || '로그인 실패');
-            }
-
-            loggedInUser = data.user;
-
-            // JWT 토큰 저장 (예: localStorage)
-            localStorage.setItem('token', data.token);
-
-            alert(`환영합니다, ${loggedInUser.nickname}님!`);
-            updateAuthState();
-            closeAuthModal();
-            showMainView();
-
-        } catch (error) {
-            alert(`로그인 실패: ${error.message}`);
-        }
-    }
-
-    async function handleSignup(event) {
-        event.preventDefault();
-
-        const nickname = document.getElementById('signup-nickname').value;
-        const email = document.getElementById('signup-email').value;
-        const password = document.getElementById('signup-password').value;
-
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/users/signup`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nickname, email, password }),
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || '회원가입 실패');
-            }
-
-            loggedInUser = data;
-
-            alert(`가입을 축하합니다, ${loggedInUser.nickname}님!`);
-            updateAuthState();
-            closeAuthModal();
-            showMainView();
-
-        } catch (error) {
-            alert(`회원가입 실패: ${error.message}`);
-        }
-    }
-
-    async function fetchWithAuth(url, options = {}) {
-        const token = localStorage.getItem('token');
-        options.headers = options.headers || {};
-        if (token) options.headers['Authorization'] = `Bearer ${token}`;
-
-        const response = await fetch(url, options);
-
-        if (response.status === 401 || response.status === 403) {
-          alert('세션이 만료되었습니다. 다시 로그인 해주세요.');
-          handleLogout();
-          throw new Error('Unauthorized');
-        }
-
-        return response;
-    }
-
-    function handleLogout() {
-        loggedInUser = null;
-        localStorage.removeItem('token');
-        alert('로그아웃되었습니다.');
-        updateAuthState();
-        showMainView();
-    }
-
-    function updateAuthState() {
-        const authContainer = document.getElementById('auth-container');
-        if (loggedInUser) {
-            // 기본 버튼들
-            let html = `
-                <div class="flex items-center space-x-4">
-                    <button data-action="show-dashboard" class="text-sm text-gray-300 hover:text-white">My Page</button>
-                    <button data-action="logout" class="bg-gray-700 text-white font-bold py-2 px-5 rounded-full text-sm">Logout</button>
-                </div>
+                </main>
+                <footer class="border-t border-gray-800"></footer>
             `;
+            auctionPageView.innerHTML = `<header class="fixed top-0 left-0 right-0 z-50 header-blur header-visible"><div class="container mx-auto px-6 py-4 flex justify-between items-center"><a href="#" data-action="show-main-view" class="logo text-2xl font-black tracking-wider">CANVAS X</a><button data-action="show-main-view" class="back-to-main-btn text-gray-300 hover:text-white">&larr; Back to Main</button></div></header><div class="min-h-screen flex items-center justify-center pt-20"><div class="w-full max-w-2xl bg-gray-900 border border-gray-700 rounded-lg p-8 m-4"><h1 class="text-3xl font-bold">Auction for Canvas X</h1><p id="auction-date-title" class="text-xl text-gray-400 mb-6"></p><div class="grid grid-cols-2 gap-4 text-center mb-6"><div><p class="text-sm text-gray-500">현재 최고 입찰가</p><p id="auction-current-bid" class="text-4xl font-bold"></p></div><div><p class="text-sm text-gray-500">경매 마감</p><p id="auction-time-left" class="text-4xl font-bold"></p></div></div><div><label for="bid-amount" class="block text-sm font-medium text-gray-400"></label><div class="mt-1 flex rounded-md shadow-sm"><span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-600 bg-gray-800 text-gray-300 sm:text-sm">₩</span><input type="number" id="bid-amount" class="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md bg-gray-800 border-gray-600"></div></div><button data-action="place-bid" id="place-bid" class="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-md transition-all">입찰하기</button><div class="mt-8"><h2 class="text-lg font-bold mb-2">입찰 기록</h2><div id="auction-bid-history" class="bid-history border border-gray-700 rounded-lg p-3 text-sm space-y-2"></div></div></div></div>`;
+            authModal.innerHTML = `<div class="w-full max-w-md bg-gray-900 border border-gray-700 rounded-lg p-8 m-4 relative"><button data-action="close-auth-modal" class="absolute top-4 right-4 text-gray-500 hover:text-white text-2xl">&times;</button><div id="login-form"><h2 class="text-3xl font-bold text-center mb-6">Login</h2><form id="login-form-element"><div class="mb-4"><label for="login-email" class="block text-sm font-medium text-gray-400">Email</label><input type="email" id="login-email" required class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md"></div><div class="mb-6"><label for="login-password" class="block text-sm font-medium text-gray-400">Password</label><input type="password" id="login-password" required class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md"></div><button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-md">Login</button><p class="text-center text-sm text-gray-400 mt-4">Don't have an account? <button type="button" data-action="toggle-auth-form" data-form-type="signup" class="font-medium text-indigo-400 hover:text-indigo-300">Sign Up</button></p></form></div><div id="signup-form" class="hidden"><h2 class="text-3xl font-bold text-center mb-6">Sign Up</h2><form id="signup-form-element"><div class="mb-4"><label for="signup-nickname" class="block text-sm font-medium text-gray-400">Nickname</label><input type="text" id="signup-nickname" required class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md"></div><div class="mb-4"><label for="signup-email" class="block text-sm font-medium text-gray-400">Email</label><input type="email" id="signup-email" required class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md"></div><div class="mb-6"><label for="signup-password" class="block text-sm font-medium text-gray-400">Password</label><input type="password" id="signup-password" required class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md"></div><button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-md">Create Account</button><p class="text-center text-sm text-gray-400 mt-4">Already have an account? <button type="button" data-action="toggle-auth-form" data-form-type="login" class="font-medium text-indigo-400 hover:text-indigo-300">Login</button></p></form></div></div>`;
+            dashboardView.innerHTML = `<header class="fixed top-0 left-0 right-0 z-50 header-blur header-visible"><div class="container mx-auto px-6 py-4 flex justify-between items-center"><a href="#" data-action="show-main-view" class="logo text-2xl font-black tracking-wider">CANVAS X</a><button data-action="show-main-view" class="back-to-main-btn text-gray-300 hover:text-white">&larr; Back to Main</button></div></header><div class="container mx-auto px-6 pt-24 pb-12"><h1 class="text-4xl font-bold">My Dashboard</h1><p class="text-gray-400 mt-2">나의 낙찰 내역을 관리하고 광고를 업로드하세요.</p><div id="won-auctions-list" class="mt-8 space-y-6"></div></div>`;
+            document.querySelector('#how-it-works').innerHTML = `<div class="text-center"><h2 class="text-3xl md:text-4xl font-bold">How It Works</h2><p class="mt-2 text-gray-400">단 3단계로 당신의 스토리를 세상에 공개하세요.</p></div><div class="mt-16 grid grid-cols-1 md:grid-cols-3 gap-12 text-center"><div class="border border-gray-800 p-8 rounded-xl"><div class="text-5xl font-black text-gray-700">01</div><h3 class="mt-4 text-2xl font-bold">Join the Auction</h3><p class="mt-2 text-gray-400">원하는 날짜의 경매에 참여하여 최고가를 입찰하세요.</p></div><div class="border border-gray-800 p-8 rounded-xl"><div class="text-5xl font-black text-gray-700">02</div><h3 class="mt-4 text-2xl font-bold">Submit Your Canvas</h3><p class="mt-2 text-gray-400">낙찰 후, 당신의 걸작(영상, 이미지 등)을 업로드하고 승인을 받으세요.</p></div><div class="border border-gray-800 p-8 rounded-xl"><div class="text-5xl font-black text-gray-700">03</div><h3 class="mt-4 text-2xl font-bold">Take the Stage</h3><p class="mt-2 text-gray-400">당신의 이야기가 24시간 동안 전 세계를 무대로 펼쳐집니다.</p></div></div>`;
+            document.querySelector('#archive').innerHTML = `<div class="container mx-auto px-6"><div class="text-center"><h2 class="text-3xl md:text-4xl font-bold">The Archive</h2><p class="mt-2 text-gray-400">지난 캔버스에 담겼던 영감의 순간들을 만나보세요.</p></div><div class="mt-12 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6"><div class="aspect-w-1 aspect-h-1 archive-item"><img src="https://placehold.co/400x400/1a1a1a/ffffff?text=Aug+09" alt="Archive Aug 09" class="rounded-lg object-cover"></div></div></div>`;
+            document.querySelector('footer').innerHTML = `<div class="container mx-auto px-6 py-8 text-center text-gray-400"><p class="text-lg font-bold">CANVAS X</p><div class="mt-4 flex justify-center space-x-6"><a href="#" class="hover:text-white">Contact</a><a href="#" class="hover:text-white">Terms of Service</a><a href="#" class="hover:text-white">FAQ</a></div><p class="mt-6 text-sm">&copy; 2025 Canvas X. All Rights Reserved. The stage is yours.</p></div>`;
+        }
 
-            // 관리자일 때만 관리자 페이지 버튼 추가
-            if (loggedInUser.isAdmin) {
-                html = `
-                    <div class="flex items-center space-x-4">
-                        <button data-action="show-dashboard" class="text-sm text-gray-300 hover:text-white">My Page</button>
-                        <button data-action="show-admin" class="bg-red-600 text-white font-bold py-2 px-5 rounded-full text-sm">관리자 페이지</button>
-                        <button data-action="logout" class="bg-gray-700 text-white font-bold py-2 px-5 rounded-full text-sm">Logout</button>
-                    </div>
-                `;
+        function attachEventListeners() {
+            document.body.addEventListener('click', (e) => {
+                const actionTarget = e.target.closest('[data-action]');
+                if (!actionTarget) return;
+                const action = actionTarget.dataset.action;
+                
+                switch(action) {
+                    case 'open-auth': openAuthModal('login'); break;
+                    case 'close-auth-modal': closeAuthModal(); break;
+                    case 'toggle-auth-form': openAuthModal(actionTarget.dataset.formType); break;
+                    case 'show-main-view': e.preventDefault(); showMainView(); break;
+                    case 'show-auction-page': showAuctionPage(actionTarget.dataset.auctionId); break;
+                    case 'place-bid': handlePlaceBid(); break;
+                    case 'show-dashboard': showDashboard(); break;
+                    case 'logout': handleLogout(); break;
+                }
+            });
+
+            document.body.addEventListener('submit', (e) => {
+                if (e.target.id === 'login-form-element') handleLogin(e);
+                if (e.target.id === 'signup-form-element') handleSignup(e);
+            });
+        }
+
+        async function api(endpoint, options = {}) {
+            try {
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
+                const isJson = response.headers.get('content-type')?.includes('application/json');
+                const data = isJson ? await response.json() : await response.text();
+                if (!response.ok) {
+                    throw new Error(data.message || data || '서버와 통신 중 오류가 발생했습니다.');
+                }
+                return data;
+            } catch (error) {
+                console.error(`API Error on ${endpoint}:`, error);
+                throw error;
             }
-
-            authContainer.innerHTML = html;
-        } else {
-            authContainer.innerHTML = `<button data-action="open-auth" id="auth-button" class="bg-white text-black font-bold py-2 px-5 rounded-full text-sm btn-primary transition">Login / Sign Up</button>`;
         }
-    }
 
-    // --- CORE APP LOGIC ---
-    function checkTodaysAd() {
-        const isAdAvailableToday = false; // 실제로 오늘 광고가 있는지 여부 판단 필요
-        if (isAdAvailableToday) {
-            document.getElementById('ad-visual-container').classList.remove('hidden');
-            document.getElementById('canvas-info-section').classList.remove('hidden');
-            document.getElementById('countdown-display-container').classList.add('hidden');
-        } else {
-            document.getElementById('countdown-display-container').classList.remove('hidden');
-            document.getElementById('canvas-info-section').classList.add('hidden');
-            document.getElementById('ad-visual-container').classList.add('hidden');
-            const now = new Date();
-            const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-            startMainCountdown(tomorrow.getTime());
+        function openAuthModal(formType) {
+            authModal.classList.remove('hidden');
+            const loginForm = authModal.querySelector('#login-form');
+            const signupForm = authModal.querySelector('#signup-form');
+            loginForm.classList.toggle('hidden', formType !== 'login');
+            signupForm.classList.toggle('hidden', formType !== 'signup');
         }
-    }
-
-    async function populateUpcomingAuctions() {
-        const container = document.getElementById('auction-list-container');
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/auctions`);
-            if (!response.ok) throw new Error('Server error');
-            const auctions = await response.json();
-            container.innerHTML = '';
-            auctions.forEach((auction) => {
-                const card = `
-                <div class="bg-black border border-gray-800 p-8 rounded-xl">
-                    <p class="text-2xl font-bold">${new Date(auction.id).toLocaleDateString('ko-KR', {
-                        month: 'long',
-                        day: 'numeric',
-                    })}</p>
-                    <p class="mt-2 text-gray-400">현재가: ₩${(auction.current_highest_bid || 0).toLocaleString()}</p>
-                    <button data-action="show-auction-page" data-auction-id="${auction.id}" class="mt-6 inline-block w-full bg-white text-black font-bold py-3 px-6 rounded-lg btn-primary transition">경매 참여</button>
-                </div>
-                `;
-                container.innerHTML += card;
-            });
-        } catch (error) {
-            container.innerHTML =
-                '<p class="text-red-500 col-span-3">경매 정보를 불러올 수 없습니다. 백엔드 서버가 실행 중인지 확인해주세요.</p>';
+        function closeAuthModal() { authModal.classList.add('hidden'); }
+        
+        async function handleLogin(event) {
+            event.preventDefault();
+            const form = event.target;
+            const email = form.querySelector('#login-email').value;
+            const password = form.querySelector('#login-password').value;
+            try {
+                const data = await api('/api/users/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                loggedInUser = data.user;
+                alert(data.message);
+                updateAuthState();
+                closeAuthModal();
+            } catch (error) {
+                alert(`로그인 실패: ${error.message}`);
+            }
         }
-    }
+        async function handleSignup(event) {
+            event.preventDefault();
+            const form = event.target;
+            const email = form.querySelector('#signup-email').value;
+            const password = form.querySelector('#signup-password').value;
+            const nickname = form.querySelector('#signup-nickname').value;
+            try {
+                await api('/api/users/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password, nickname })
+                });
+                alert('회원가입 성공! 이제 로그인해주세요.');
+                openAuthModal('login');
+            } catch (error) {
+                alert(`회원가입 실패: ${error.message}`);
+            }
+        }
+        function handleLogout() {
+            loggedInUser = null;
+            alert('로그아웃되었습니다.');
+            updateAuthState();
+            showMainView();
+        }
+        function updateAuthState() {
+            const authContainer = document.getElementById('auth-container');
+            if (loggedInUser) {
+                authContainer.innerHTML = `<div class="flex items-center space-x-4"><button data-action="show-dashboard" class="text-sm text-gray-300 hover:text-white">My Page</button><button data-action="logout" class="bg-gray-700 text-white font-bold py-2 px-5 rounded-full text-sm">Logout</button></div>`;
+            } else {
+                authContainer.innerHTML = `<button data-action="open-auth" id="auth-button" class="bg-white text-black font-bold py-2 px-5 rounded-full text-sm btn-primary transition">Login / Sign Up</button>`;
+            }
+        }
 
-    async function showAuctionPage(auctionId) {
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/auctions/${auctionId}`);
-            if (!response.ok) throw new Error('Auction not found');
-            const { auction, bids } = await response.json();
+        function checkTodaysAd() {
+            const isAdAvailableToday = false;
+            if (isAdAvailableToday) {
+                document.getElementById('ad-visual-container').classList.remove('hidden');
+                document.getElementById('canvas-info-section').classList.remove('hidden');
+            } else {
+                document.getElementById('countdown-display-container').classList.remove('hidden');
+                document.getElementById('canvas-info-section').classList.add('hidden');
+                const now = new Date();
+                const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+                startMainCountdown(tomorrow.getTime());
+            }
+        }
 
-            activeAuctionId = auctionId;
-            mainView.classList.add('hidden');
-            auctionPageView.classList.remove('hidden');
+        async function populateUpcomingAuctions() {
+            const container = document.getElementById('auction-list-container');
+            try {
+                const auctions = await api('/api/auctions');
+                container.innerHTML = ''; 
+                auctions.forEach(auction => {
+                    const card = `<div class="bg-black border border-gray-800 p-8 rounded-xl"><p class="text-2xl font-bold">${new Date(auction.id).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })}</p><p class="mt-2 text-gray-400">현재가: ₩${(auction.current_highest_bid || 0).toLocaleString()}</p><button data-action="show-auction-page" data-auction-id="${auction.id}" class="mt-6 inline-block w-full bg-white text-black font-bold py-3 px-6 rounded-lg btn-primary transition">경매 참여</button></div>`;
+                    container.innerHTML += card;
+                });
+            } catch (error) {
+                container.innerHTML = '<p class="text-red-500 col-span-3">경매 정보를 불러올 수 없습니다. 백엔드 서버가 실행 중인지 확인해주세요.</p>';
+            }
+        }
+
+        async function showAuctionPage(auctionId) {
+            try {
+                const { auction, bids } = await api(`/api/auctions/${auctionId}`);
+                activeAuctionId = auctionId;
+                mainView.classList.add('hidden');
+                auctionPageView.classList.remove('hidden');
+                window.scrollTo(0, 0);
+                updateAuctionDetails(auction, bids);
+                if(auctionInterval) clearInterval(auctionInterval);
+                updateAuctionTimer(new Date(auction.end_time));
+                auctionInterval = setInterval(() => updateAuctionTimer(new Date(auction.end_time)), 1000);
+            } catch (error) {
+                alert('경매 정보를 불러오는 데 실패했습니다.');
+            }
+        }
+        
+        function showMainView() {
+            if(auctionInterval) clearInterval(auctionInterval);
+            mainView.classList.remove('hidden');
+            auctionPageView.classList.add('hidden');
             dashboardView.classList.add('hidden');
+            populateUpcomingAuctions();
+            setupHeaderVisibility(); // 메인 뷰로 돌아올 때 스크롤 이벤트 다시 활성화
+        }
+
+        async function showDashboard() {
+            if (!loggedInUser) return;
+            mainView.classList.add('hidden');
+            auctionPageView.classList.add('hidden');
+            dashboardView.classList.remove('hidden');
+            await populateWonAuctions();
             window.scrollTo(0, 0);
-
-            updateAuctionDetails(auction, bids);
-            if (auctionInterval) clearInterval(auctionInterval);
-            updateAuctionTimer(new Date(auction.end_time));
-            auctionInterval = setInterval(() => updateAuctionTimer(new Date(auction.end_time)), 1000);
-        } catch (error) {
-            alert('경매 정보를 불러오는 데 실패했습니다.');
-        }
-        setupHeaderVisibility();
-    }
-
-    function showMainView() {
-        if (auctionInterval) clearInterval(auctionInterval);
-        mainView.classList.remove('hidden');
-        auctionPageView.classList.add('hidden');
-        dashboardView.classList.add('hidden');
-        populateUpcomingAuctions();
-        setupHeaderVisibility();
-    }
-
-    function showDashboard() {
-        mainView.classList.add('hidden');
-        auctionPageView.classList.add('hidden');
-        dashboardView.classList.remove('hidden');
-        // populateWonAuctions(); // 나중에 추가 가능
-        window.scrollTo(0, 0);
-        setupHeaderVisibility();
-    }
-
-    function showAdminPage() {
-        mainView.classList.add('hidden');
-        auctionPageView.classList.add('hidden');
-        dashboardView.classList.add('hidden');
-        adminPageView.classList.remove('hidden');
-        requestAnimationFrame(() => {
-            window.scrollTo(0, 0);
-        });
-        setupHeaderVisibility();
-    }
-
-    function updateAuctionDetails(auction, bids) {
-        document.getElementById('auction-current-bid').textContent = `₩${(auction.current_highest_bid || 0).toLocaleString()}`;
-        const bidHistoryEl = document.getElementById('auction-bid-history');
-        bidHistoryEl.innerHTML = '';
-        bids.forEach((bid) => {
-            bidHistoryEl.innerHTML += `<p class="text-gray-400 text-center">${bid.nickname}: ₩${bid.amount.toLocaleString()}</p>`;
-        });
-        const minBid = (auction.current_highest_bid || 0) + 10000;
-        document.getElementById('bid-amount').placeholder = minBid;
-        document.querySelector('#auction-page-view label[for="bid-amount"]').textContent = `입찰 금액 (최소 ₩${minBid.toLocaleString()} 이상)`;
-    }
-
-    async function handlePlaceBid() {
-        if (!loggedInUser) {
-            alert('입찰을 위해서는 로그인이 필요합니다.');
-            return openAuthModal('login');
         }
 
-        const bidAmountInput = document.getElementById('bid-amount');
-        const amount = parseInt(bidAmountInput.value, 10);
-        if (isNaN(amount)) {
-            alert('유효한 입찰 금액을 입력해주세요.');
-            return;
+        async function populateWonAuctions() {
+            const container = document.getElementById('won-auctions-list');
+            try {
+                const wonAuctions = await api(`/api/users/${loggedInUser.id}/won-auctions`);
+                if (wonAuctions.length === 0) {
+                    container.innerHTML = '<p class="text-gray-400">아직 낙찰받은 경매가 없습니다.</p>';
+                    return;
+                }
+                container.innerHTML = wonAuctions.map(auction => {
+                    const statusInfo = getStatusInfo(auction.status);
+                    return `<div class="bg-gray-900 border border-gray-800 rounded-lg p-6"><div class="flex justify-between items-start"><div><p class="text-xl font-bold">${new Date(auction.id).toLocaleDateString('ko-KR', { year:'numeric', month: 'long', day: 'numeric' })}</p><p class="text-gray-400">낙찰가: ₩${(auction.final_bid || auction.current_highest_bid).toLocaleString()}</p></div><div class="text-right"><p class="flex items-center justify-end"><span class="status-dot ${statusInfo.color}"></span>${statusInfo.text}</p></div></div><div class="mt-4 pt-4 border-t border-gray-700">${getActionForStatus(auction.id, auction.status)}</div></div>`;
+                }).join('');
+            } catch (error) {
+                container.innerHTML = `<p class="text-red-500">낙찰 내역을 불러오는 데 실패했습니다: ${error.message}</p>`;
+            }
         }
 
-        const token = localStorage.getItem('token');
+        function getStatusInfo(status) {
+            switch(status) {
+                case 'ended': return { text: '결제 대기중', color: 'bg-yellow-500' };
+                case 'paid': return { text: '광고 업로드 대기중', color: 'bg-blue-500' };
+                case 'pending_approval': return { text: '승인 대기중', color: 'bg-purple-500' };
+                case 'approved': return { text: '게시 승인됨', color: 'bg-green-500' };
+                default: return { text: '알 수 없음', color: 'bg-gray-500' };
+            }
+        }
+        function getActionForStatus(id, status) {
+            switch(status) {
+                case 'ended': return `<button data-action="payment" data-auction-id="${id}" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-md transition">결제하기</button>`;
+                case 'paid': return `<form class="ad-upload-form" data-auction-id="${id}"><label for="ad-upload-${id}" class="block text-sm font-medium text-gray-400 mb-2">광고 파일 업로드</label><div class="flex items-center"><input type="file" name="adFile" id="ad-upload-${id}" class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" required/><button type="submit" class="ml-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-md transition whitespace-nowrap">업로드</button></div></form>`;
+                case 'pending_approval': return `<p class="text-sm text-gray-400">관리자가 광고를 검토 중입니다. 잠시만 기다려주세요.</p>`;
+                case 'approved': return `<p class="text-sm text-green-400">광고가 승인되었습니다! ${new Date(id).toLocaleDateString('ko-KR')} 00:00에 게시됩니다.</p>`;
+                default: return '';
+            }
+        }
 
-        try {
-            const response = await fetch(`${API_BASE_URL}/api/auctions/${activeAuctionId}/bid`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    Authorization: `Bearer ${token}`, // 토큰 헤더
-                },
-                // userId는 서버가 토큰에서 확인하는 걸로 가정하여 제거
-                body: JSON.stringify({ amount }),
+        function updateAuctionDetails(auction, bids) {
+            document.getElementById('auction-current-bid').textContent = `₩${(auction.current_highest_bid || 0).toLocaleString()}`;
+            const bidHistoryEl = document.getElementById('auction-bid-history');
+            bidHistoryEl.innerHTML = '';
+            bids.forEach(bid => {
+                bidHistoryEl.innerHTML += `<p class="text-gray-400 text-center">${bid.nickname}: ₩${bid.amount.toLocaleString()}</p>`;
             });
-
-            const result = await response.json();
-
-            if (!response.ok) throw new Error(result.message || '입찰 실패');
-
-            alert('입찰에 성공했습니다!');
-            bidAmountInput.value = '';
-            showAuctionPage(activeAuctionId);
-        } catch (error) {
-            alert(`입찰 실패: ${error.message}`);
+            const minBid = (auction.current_highest_bid || 0) + 10000;
+            document.getElementById('bid-amount').placeholder = minBid;
+            document.querySelector('#auction-page-view label[for="bid-amount"]').textContent = `입찰 금액 (최소 ₩${minBid.toLocaleString()} 이상)`;
         }
-    }
 
-    function setupHeaderVisibility() {
-        const header = document.querySelector('.header');
-        if (!header) return;
-
-        if (adminPageView && !adminPageView.classList.contains('hidden')) {
-            // 관리자 페이지일 때 헤더 항상 보이게
-            header.classList.add('header-visible');
-        } else if (mainView && !mainView.classList.contains('hidden')) {
-            // 메인 페이지일 때는 스크롤에 따라 보이기/숨기기
+        async function handlePlaceBid() {
+            if (!loggedInUser) {
+                alert('입찰을 위해서는 로그인이 필요합니다.');
+                return openAuthModal('login');
+            }
+            const bidAmountInput = document.getElementById('bid-amount');
+            const amount = parseInt(bidAmountInput.value, 10);
+            try {
+                await api(`/api/auctions/${activeAuctionId}/bid`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: loggedInUser.id, amount })
+                });
+                alert('입찰에 성공했습니다!');
+                bidAmountInput.value = '';
+                showAuctionPage(activeAuctionId);
+            } catch (error) {
+                alert(`입찰 실패: ${error.message}`);
+            }
+        }
+        
+        function setupHeaderVisibility() {
+            const header = document.querySelector('#main-view .header');
+            if (!header) return;
             window.addEventListener('scroll', () => {
-                if (window.scrollY > 50) header.classList.add('header-visible');
-                 else header.classList.remove('header-visible');
+                if (window.scrollY > 50) {
+                    header.classList.add('header-visible');
+                } else {
+                    header.classList.remove('header-visible');
+                }
             });
-        } else {
-        // 그 외 뷰에서는 필요에 따라 처리 (예: 항상 보이게 하거나 숨기기)
-        header.classList.remove('header-visible');
         }
-    }
-
-    function startMainCountdown(targetDate) {
-        const mainCountdownEl = document.getElementById('main-countdown');
-        if (!mainCountdownEl) return;
-        const interval = setInterval(() => {
-            const now = new Date().getTime();
-            const distance = targetDate - now;
+        
+        function startMainCountdown(targetDate) {
+            const mainCountdownEl = document.getElementById('main-countdown');
+            if (!mainCountdownEl) return;
+            const interval = setInterval(() => {
+                const now = new Date().getTime();
+                const distance = targetDate - now;
+                if (distance < 0) {
+                    clearInterval(interval);
+                    mainCountdownEl.innerHTML = "REVEALING...";
+                    return;
+                }
+                const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const s = Math.floor((distance % (1000 * 60)) / 1000);
+                mainCountdownEl.innerHTML = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+            }, 1000);
+        }
+        
+        function updateAuctionTimer(endTime) {
+            const timeLeftEl = document.getElementById('auction-time-left');
+            const distance = endTime - new Date().getTime();
             if (distance < 0) {
-                clearInterval(interval);
-                mainCountdownEl.innerHTML = 'REVEALING...';
+                timeLeftEl.textContent = "ENDED";
+                document.getElementById('place-bid').disabled = true;
+                document.getElementById('place-bid').textContent = '경매 종료';
+                clearInterval(auctionInterval);
                 return;
             }
+            const d = Math.floor(distance / (1000 * 60 * 60 * 24));
             const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
             const s = Math.floor((distance % (1000 * 60)) / 1000);
-            mainCountdownEl.innerHTML = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(
-                s
-            ).padStart(2, '0')}`;
-        }, 1000);
-    }
-
-    function updateAuctionTimer(endTime) {
-        const timeLeftEl = document.getElementById('auction-time-left');
-        const distance = endTime - new Date().getTime();
-        if (distance < 0) {
-            timeLeftEl.textContent = 'ENDED';
-            document.getElementById('place-bid').disabled = true;
-            document.getElementById('place-bid').textContent = '경매 종료';
-            clearInterval(auctionInterval);
-            return;
+            let output = "";
+            if (d > 0) output += `${d}d `;
+            output += `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+            timeLeftEl.textContent = output;
         }
-        const d = Math.floor(distance / (1000 * 60 * 60 * 24));
-        const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
-        const s = Math.floor((distance % (1000 * 60)) / 1000);
-        let output = '';
-        if (d > 0) output += `${d}d `;
-        output += `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-        timeLeftEl.textContent = output;
-    }
-</script>
+    </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
