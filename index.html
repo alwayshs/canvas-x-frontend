@@ -420,16 +420,9 @@
                             <button type="submit" class="ml-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-md transition whitespace-nowrap">업로드</button>
                         </div>
                     </form>`;
-                case 'rejected': 
-                    return `
-                        <p class="text-sm text-red-400 mb-2">광고가 거절되었습니다. 다른 파일을 다시 업로드해주세요.</p>
-                        <form class="ad-upload-form" data-auction-id="${id}">
-                            <label for="ad-upload-${id}" class="block text-sm font-medium text-gray-400 mb-2">광고 파일 재업로드</label>
-                            <div class="flex items-center">
-                                <input type="file" name="adFile" id="ad-upload-${id}" class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" required/>
-                                <button type="submit" class="ml-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-md transition whitespace-nowrap">재업로드</button>
-                            </div>
-                        </form>`;
+                case 'rejected':
+                    const message = status === 'rejected' ? '<p class="text-sm text-red-400 mb-2">광고가 거절되었습니다. 다른 파일을 다시 업로드해주세요.</p>' : '';
+                    return `${message}<form class="ad-upload-form" data-auction-id="${id}"><label for="ad-upload-${id}" class="block text-sm font-medium text-gray-400 mb-2">광고 파일 업로드</label><div class="flex items-center"><input type="file" name="adFile" id="ad-upload-${id}" class="block w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100" required/><button type="submit" class="ml-4 bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-md transition whitespace-nowrap">업로드</button></div></form>`;
                 case 'pending_approval': return `
                     <div class="flex items-center justify-between">
                         <p class="text-sm text-gray-400">관리자가 광고를 검토 중입니다.</p>
@@ -581,6 +574,7 @@
     </script>
 </body>
 </html>
+
 
 
 
