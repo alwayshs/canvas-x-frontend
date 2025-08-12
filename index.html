@@ -406,12 +406,17 @@
                 case 'paid': return { text: '광고 업로드 대기중', color: 'bg-blue-500' };
                 case 'pending_approval': return { text: '승인 대기중', color: 'bg-purple-500' };
                 case 'approved': return { text: '게시 승인됨', color: 'bg-green-500' };
+                case 'completed': return { text: '게시 승인됨', color: 'bg-green-500' }; // FIX: 'completed' 상태 추가
                 default: return { text: '알 수 없음', color: 'bg-gray-500' };
             }
         }
         
         // --- DASHBOARD & UPLOAD LOGIC ---
         function getActionForStatus(id, status) {
+            const auctionDate = new Date(id);
+            const refundDeadline = new Date(auctionDate.getFullYear(), auctionDate.getMonth(), auctionDate.getDate(), 17, 0, 0);
+            const now = new Date();
+            let refundButton = '';
             
             switch(status) {
                 case 'ended': 
@@ -445,6 +450,8 @@
                          return `<div class="flex items-center justify-between"><p class="text-sm text-green-400">광고가 승인되었습니다!</p>${refundButton}</div>`;
                     }
                     return '';
+                case 'completed':
+                     return `<div class="flex items-center justify-between"><p class="text-sm text-green-400">광고가 승인되었습니다!</p>${refundButton}</div>`;
                 default: return '';
             }
         }
@@ -612,6 +619,7 @@
     </script>
 </body>
 </html>
+
 
 
 
