@@ -57,9 +57,8 @@
         async function handlePayment(auctionId) {
             if (!loggedInUser) return alert('로그인이 필요합니다.');
 
-            // FIX: TossPayments SDK가 로드되었는지 확인하는 안전장치 추가
             if (typeof TossPayments === 'undefined') {
-                alert('결제 모듈을 불러오는 데 실패했습니다. 잠시 후 다시 시도해주세요.');
+                alert('결제 모듈을 불러오는 데 실패했습니다. 광고 차단 프로그램을 비활성화하거나, 잠시 후 다시 시도해주세요.');
                 return;
             }
 
@@ -70,7 +69,9 @@
                     body: JSON.stringify({ auctionId, userId: loggedInUser.id })
                 });
 
-                const tossPayments = TossPayments(TOSS_CLIENT_KEY);
+                // FIX: TossPayments SDK가 비동기적으로 로드되므로 await를 사용합니다.
+                const tossPayments = await TossPayments(TOSS_CLIENT_KEY);
+                
                 tossPayments.requestPayment('카드', {
                     amount: paymentInfo.amount,
                     orderId: paymentInfo.orderId,
@@ -492,6 +493,7 @@
     </script>
 </body>
 </html>
+
 
 
 
