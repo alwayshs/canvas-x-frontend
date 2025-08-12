@@ -195,12 +195,15 @@
                     case 'show-dashboard': showDashboard(); break;
                     case 'show-admin-page': window.open('admin.html', '_blank'); break;
                     case 'logout': handleLogout(); break;
+                    // --- FIX: 'payment' case added ---
+                    case 'payment': handlePayment(actionTarget.dataset.auctionId); break;
                 }
             });
 
             document.body.addEventListener('submit', (e) => {
                 if (e.target.id === 'login-form-element') handleLogin(e);
                 if (e.target.id === 'signup-form-element') handleSignup(e);
+                if (e.target.classList.contains('ad-upload-form')) handleAdUpload(e);
             });
         }
 
@@ -498,4 +501,5 @@
     </script>
 </body>
 </html>
+
 
