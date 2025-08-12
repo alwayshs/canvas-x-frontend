@@ -97,7 +97,7 @@
             if (!confirm(`이 광고를 '${status}' 상태로 변경하시겠습니까?`)) return;
 
             try {
-                const result = await api(`/api/admin/ad-content/${adId}/status`, {
+                const result = await api(`/api/admin/ads/${adId}/status`, {
                     method: 'PATCH',
                     body: JSON.stringify({ newStatus: status })
                 });
@@ -114,3 +114,4 @@
     </script>
 </body>
 </html>
+
