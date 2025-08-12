@@ -1,407 +1,81 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Canvas X 관리자 대시보드 포함</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Canvas X - Admin Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body { font-family: sans-serif; background-color: #111827; color: white; }
+    </style>
 </head>
-<body class="bg-black text-white min-h-screen">
-
-  <!-- 헤더 -->
-  <header class="header fixed top-0 left-0 right-0 bg-gray-900 bg-opacity-90 p-4 flex justify-between items-center z-50">
-    <h1 class="text-2xl font-bold">Canvas X</h1>
-    <div id="auth-container">
-      <button id="auth-button" class="bg-white text-black font-bold py-2 px-5 rounded-full text-sm btn-primary transition">Login / Sign Up</button>
+<body class="p-8">
+    <div class="container mx-auto">
+        <h1 class="text-3xl font-bold mb-6">Canvas X 관리자 대시보드</h1>
+        
+        <div id="pending-ads-container" class="space-y-4">
+            <!-- 승인 대기 중인 광고가 여기에 표시됩니다. -->
+        </div>
     </div>
-  </header>
 
-  <!-- 메인 뷰 -->
-  <main id="main-view" class="pt-20 px-6 max-w-5xl mx-auto">
+    <script>
+        const API_BASE_URL = 'https://canvas-x.onrender.com'; // 당신의 Render 서버 주소
 
-    <!-- 일반 메인 콘텐츠 -->
-    <section id="main-content" class="">
-      <h2 class="text-3xl font-bold mb-4">환영합니다, Canvas X!</h2>
-      <p>메인 페이지 콘텐츠가 여기에 표시됩니다.</p>
-    </section>
+        async function fetchPendingAds() {
+            const container = document.getElementById('pending-ads-container');
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/admin/pending-ads`);
+                if (!response.ok) throw new Error(`Server responded with status: ${response.status}`);
+                const ads = await response.json();
 
-  </main>
+                if (ads.length === 0) {
+                    container.innerHTML = '<p class="text-gray-400">승인 대기 중인 광고가 없습니다.</p>';
+                    return;
+                }
 
-  <!-- 경매 페이지 뷰 -->
-  <section id="auction-page-view" class="hidden p-6 max-w-5xl mx-auto">
-    <h2 class="text-3xl font-bold mb-6">경매 상세 정보</h2>
-    <!-- 경매 정보 및 입찰 폼 -->
-  </section>
+                container.innerHTML = ads.map(ad => `
+                    <div class="bg-gray-800 p-4 rounded-lg flex items-center justify-between">
+                        <div>
+                            <p class="font-bold">게시일: ${ad.auction_id}</p>
+                            <p class="text-sm text-gray-400">소유자 ID: ${ad.owner_id}</p>
+                            <a href="${API_BASE_URL}${ad.content_url}" target="_blank" class="text-blue-400 hover:underline">광고 미리보기</a>
+                        </div>
+                        <div class="flex space-x-2">
+                            <button onclick="updateAdStatus(${ad.id}, 'approved')" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">승인</button>
+                            <button onclick="updateAdStatus(${ad.id}, 'rejected')" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">거절</button>
+                        </div>
+                    </div>
+                `).join('');
 
-  <!-- 사용자 대시보드 뷰 -->
-  <section id="dashboard-view" class="hidden p-6 max-w-5xl mx-auto">
-    <h2 class="text-3xl font-bold mb-6">내 낙찰 내역</h2>
-    <!-- 낙찰 목록 등 -->
-  </section>
-
-  <!-- 관리자 대시보드 뷰 -->
-  <section id="admin-dashboard" class="hidden p-6 max-w-5xl mx-auto bg-gray-900 rounded-lg shadow-lg">
-    <h2 class="text-3xl font-bold mb-6">관리자 대시보드</h2>
-    <div id="pending-ads-section">
-      <h3 class="text-xl font-semibold mb-4">승인 대기 중 광고</h3>
-      <div id="pending-ads-list" class="space-y-4">
-        <!-- 광고 카드 동적 추가 -->
-      </div>
-    </div>
-  </section>
-
-  <!-- 관리자 페이지 뷰 (처음엔 hidden) -->
-  <div id="dashboard-view" class="hidden p-8 bg-gray-900 text-white min-h-screen">
-    <h1 class="text-3xl font-bold mb-6">관리자 페이지</h1>
-  
-    <!-- 승인 대기 광고 목록 -->
-    <section id="pending-ads-section" class="mb-10">
-      <h2 class="text-2xl font-semibold mb-4">승인 대기 광고</h2>
-      <ul id="pending-ads-list" class="list-disc list-inside space-y-2">
-        <!-- 광고 항목이 여기 채워짐 -->
-      </ul>
-    </section>
-  
-    <!-- 승인된 광고 관리 (예시) -->
-    <section id="approved-ads-section" class="mb-10">
-      <h2 class="text-2xl font-semibold mb-4">승인된 광고</h2>
-      <ul id="approved-ads-list" class="list-disc list-inside space-y-2">
-        <!-- 승인된 광고 항목 -->
-      </ul>
-    </section>
-  
-    <button id="dashboard-back-btn" class="bg-gray-700 px-4 py-2 rounded hover:bg-gray-600">
-      뒤로 가기
-    </button>
-  </div>
-
-  <!-- 인증 모달 -->
-  <div id="auth-modal" class="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center hidden z-50">
-    <div class="bg-white rounded-lg p-8 w-full max-w-md relative text-black">
-      <button id="close-auth-modal" class="absolute top-3 right-3 text-gray-700 font-bold text-xl">&times;</button>
-      <div id="login-form" class="">
-        <h3 class="text-2xl mb-6 font-bold">로그인</h3>
-        <form id="form-login">
-          <input type="email" id="login-email" placeholder="이메일" class="w-full p-3 border border-gray-300 rounded mb-4" required />
-          <input type="password" id="login-password" placeholder="비밀번호" class="w-full p-3 border border-gray-300 rounded mb-6" required />
-          <button type="submit" class="bg-black text-white py-3 w-full rounded font-bold">로그인</button>
-        </form>
-        <p class="mt-4 text-center text-sm">계정이 없나요? <button id="show-signup" class="text-blue-600 underline">회원가입</button></p>
-      </div>
-      <div id="signup-form" class="hidden">
-        <h3 class="text-2xl mb-6 font-bold">회원가입</h3>
-        <form id="form-signup">
-          <input type="text" id="signup-nickname" placeholder="닉네임" class="w-full p-3 border border-gray-300 rounded mb-4" required />
-          <input type="email" id="signup-email" placeholder="이메일" class="w-full p-3 border border-gray-300 rounded mb-4" required />
-          <input type="password" id="signup-password" placeholder="비밀번호" class="w-full p-3 border border-gray-300 rounded mb-6" required />
-          <button type="submit" class="bg-black text-white py-3 w-full rounded font-bold">회원가입</button>
-        </form>
-        <p class="mt-4 text-center text-sm">이미 계정이 있나요? <button id="show-login" class="text-blue-600 underline">로그인</button></p>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    const API_BASE_URL = 'https://canvas-x.onrender.com'; // 실제 API 주소로 변경
-    let loggedInUser = null;
-
-    // DOM 엘리먼트 참조
-    const authModal = document.getElementById('auth-modal');
-    const mainView = document.getElementById('main-view');
-    const auctionPageView = document.getElementById('auction-page-view');
-    const dashboardView = document.getElementById('dashboard-view');
-    const adminDashboardView = document.getElementById('admin-dashboard');
-    const adminPageView = document.getElementById('dashboard-view'); // 또는 admin 페이지 div id
-
-    // --- AUTH LOGIC ---
-    function openAuthModal(formType) {
-      authModal.classList.remove('hidden');
-      document.getElementById('login-form').classList.toggle('hidden', formType !== 'login');
-      document.getElementById('signup-form').classList.toggle('hidden', formType !== 'signup');
-    }
-    function closeAuthModal() {
-      authModal.classList.add('hidden');
-    }
-
-    document.getElementById('auth-container').addEventListener('click', (e) => {
-      if (e.target.id === 'auth-button') {
-        openAuthModal('login');
-      } else if (e.target.dataset.action === 'logout') {
-        handleLogout();
-      } else if (e.target.dataset.action === 'show-dashboard') {
-        showDashboard();
-      } else if (e.target.dataset.action === 'show-admin') {
-        showAdminDashboard();
-      }
-    });
-
-    document.getElementById('close-auth-modal').addEventListener('click', closeAuthModal);
-    document.getElementById('show-signup').addEventListener('click', () => openAuthModal('signup'));
-    document.getElementById('show-login').addEventListener('click', () => openAuthModal('login'));
-
-    // 로그인 처리
-    document.getElementById('form-login').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const email = document.getElementById('login-email').value;
-      const password = document.getElementById('login-password').value;
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/users/login`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email, password })
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message || '로그인 실패');
-        loggedInUser = data.user;
-        localStorage.setItem('token', data.token);
-        alert(`환영합니다, ${loggedInUser.nickname}님!`);
-        updateAuthState();
-        closeAuthModal();
-        showMainView();
-      } catch (err) {
-        alert(`로그인 실패: ${err.message}`);
-      }
-    });
-
-    // 회원가입 처리
-    document.getElementById('form-signup').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const nickname = document.getElementById('signup-nickname').value;
-      const email = document.getElementById('signup-email').value;
-      const password = document.getElementById('signup-password').value;
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/users/signup`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ nickname, email, password })
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message || '회원가입 실패');
-        loggedInUser = data;
-        alert(`가입을 축하합니다, ${loggedInUser.nickname}님!`);
-        updateAuthState();
-        closeAuthModal();
-        showMainView();
-      } catch (err) {
-        alert(`회원가입 실패: ${err.message}`);
-      }
-    });
-
-    function handleLogout() {
-      loggedInUser = null;
-      localStorage.removeItem('token');
-      alert('로그아웃되었습니다.');
-      updateAuthState();
-      showMainView();
-    }
-
-    function updateAuthState() {
-      const authContainer = document.getElementById('auth-container');
-      if (loggedInUser) {
-        authContainer.innerHTML = `
-          <div class="flex items-center space-x-4">
-            <button data-action="show-dashboard" class="text-sm text-gray-300 hover:text-white">My Page</button>
-            ${loggedInUser.isAdmin ? '<button data-action="show-admin" class="text-sm text-gray-300 hover:text-white">Admin</button>' : ''}
-            <button data-action="logout" class="bg-gray-700 text-white font-bold py-2 px-5 rounded-full text-sm">Logout</button>
-          </div>
-        `;
-      } else {
-        authContainer.innerHTML = `<button data-action="open-auth" id="auth-button" class="bg-white text-black font-bold py-2 px-5 rounded-full text-sm btn-primary transition">Login / Sign Up</button>`;
-      }
-    }
-
-    function showMainView() {
-      mainView.classList.remove('hidden');
-      auctionPageView.classList.add('hidden');
-      dashboardView.classList.add('hidden');
-      adminDashboardView.classList.add('hidden');
-    }
-
-    function showDashboard() {
-      mainView.classList.add('hidden');
-      auctionPageView.classList.add('hidden');
-      dashboardView.classList.remove('hidden');
-      adminDashboardView.classList.add('hidden');
-      window.scrollTo(0, 0);
-      // 대시보드 데이터 로드 함수 필요 (추후 구현)
-    }
-
-    // 관리자 대시보드 보여주기 & 데이터 불러오기
-    async function showAdminDashboard() {
-      mainView.classList.add('hidden');
-      auctionPageView.classList.add('hidden');
-      dashboardView.classList.add('hidden');
-      adminDashboardView.classList.remove('hidden');
-      window.scrollTo(0, 0);
-
-      try {
-        const token = localStorage.getItem('token');
-        const response = await fetch(`${API_BASE_URL}/api/admin/pending-ads`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (!response.ok) throw new Error('관리자 광고 목록 불러오기 실패');
-        const ads = await response.json();
-
-        const container = document.getElementById('pending-ads-list');
-        container.innerHTML = '';
-        ads.forEach(ad => {
-          container.innerHTML += `
-            <div class="bg-gray-800 p-4 rounded-lg flex flex-col md:flex-row md:items-center md:justify-between">
-              <div class="mb-3 md:mb-0">
-                <p><strong>경매 ID:</strong> ${ad.auction_id}</p>
-                <p><strong>업로드자:</strong> ${ad.owner_nickname}</p>
-                <p><strong>상태:</strong> ${ad.approval_status}</p>
-                <a href="${ad.content_url}" target="_blank" class="underline text-blue-400">광고 콘텐츠 보기</a>
-              </div>
-              <div class="space-x-3">
-                <button data-ad-id="${ad.auction_id}" data-action="approve" class="bg-green-600 px-4 py-2 rounded hover:bg-green-700">승인</button>
-                <button data-ad-id="${ad.auction_id}" data-action="reject" class="bg-red-600 px-4 py-2 rounded hover:bg-red-700">거부</button>
-              </div>
-            </div>
-          `;
-        });
-      } catch (error) {
-        alert(error.message);
-      }
-    }
-
-    function showDashboard() {
-      mainView.classList.add('hidden');
-      auctionPageView.classList.add('hidden');
-      dashboardView.classList.remove('hidden');
-      window.scrollTo(0, 0);
-      loadPendingAds();
-      loadApprovedAds();
-    }
-
-    function hideDashboard() {
-      dashboardView.classList.add('hidden');
-      mainView.classList.remove('hidden');
-    }
-
-    // 뒤로가기 버튼 이벤트
-    document.getElementById('dashboard-back-btn').addEventListener('click', () => {
-      hideDashboard();
-    });
-
-    // 승인 대기 광고 목록 불러오기
-    async function loadPendingAds() {
-      const listEl = document.getElementById('pending-ads-list');
-      listEl.innerHTML = '로딩 중...';
-
-      try {
-        const token = localStorage.getItem('token');
-        const res = await fetch(`${API_BASE_URL}/api/admin/pending-ads`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (!res.ok) throw new Error('승인 대기 광고를 불러오지 못했습니다.');
-        const ads = await res.json();
-
-        if (ads.length === 0) {
-          listEl.innerHTML = '<li>승인 대기 중인 광고가 없습니다.</li>';
-          return;
+            } catch (error) {
+                console.error('Error fetching pending ads:', error);
+                container.innerHTML = `<p class="text-red-500">광고를 불러오는 중 오류가 발생했습니다. 백엔드 서버가 실행 중인지 확인해주세요.</p>`;
+            }
         }
 
-        listEl.innerHTML = '';
-        ads.forEach(ad => {
-          const li = document.createElement('li');
-          li.innerHTML = `
-            경매 ID: ${ad.auction_id} / 소유자: ${ad.owner_nickname} / 
-            <a href="${ad.content_url}" target="_blank" class="underline">광고 보기</a> 
-            <button data-action="approve-ad" data-auction-id="${ad.auction_id}" class="ml-4 bg-green-600 px-2 py-1 rounded text-white">승인</button>
-            <button data-action="reject-ad" data-auction-id="${ad.auction_id}" class="ml-2 bg-red-600 px-2 py-1 rounded text-white">거부</button>
-          `;
-          listEl.appendChild(li);
-        });
-      } catch (e) {
-        listEl.innerHTML = `<li class="text-red-500">${e.message}</li>`;
-      }
-    }
+        async function updateAdStatus(adId, status) {
+            if (!confirm(`이 광고를 '${status}' 상태로 변경하시겠습니까?`)) return;
 
-    // 승인된 광고 목록 불러오기 (예시)
-    async function loadApprovedAds() {
-      const listEl = document.getElementById('approved-ads-list');
-      listEl.innerHTML = '로딩 중...';
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/admin/ad-content/${adId}/status`, {
+                    method: 'PATCH',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ newStatus: status })
+                });
 
-      try {
-        const token = localStorage.getItem('token');
-        const res = await fetch(`${API_BASE_URL}/api/admin/approved-ads`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        if (!res.ok) throw new Error('승인된 광고를 불러오지 못했습니다.');
-        const ads = await res.json();
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.message);
 
-        if (ads.length === 0) {
-          listEl.innerHTML = '<li>승인된 광고가 없습니다.</li>';
-          return;
+                alert(result.message);
+                fetchPendingAds(); // 목록 새로고침
+
+            } catch (error) {
+                console.error('Error updating ad status:', error);
+                alert(`상태 변경 실패: ${error.message}`);
+            }
         }
 
-        listEl.innerHTML = '';
-        ads.forEach(ad => {
-          const li = document.createElement('li');
-          li.innerHTML = `
-            경매 ID: ${ad.auction_id} / 소유자: ${ad.owner_nickname} / 
-            <a href="${ad.content_url}" target="_blank" class="underline">광고 보기</a>
-          `;
-          listEl.appendChild(li);
-        });
-      } catch (e) {
-        listEl.innerHTML = `<li class="text-red-500">${e.message}</li>`;
-      }
-    }
-
-    // 승인 / 거부 버튼 클릭 처리
-    document.body.addEventListener('click', async (e) => {
-      if (!e.target.dataset.action) return;
-      const action = e.target.dataset.action;
-      const auctionId = e.target.dataset.auctionId;
-      if (!auctionId) return;
-
-      if (action === 'approve-ad' || action === 'reject-ad') {
-        const token = localStorage.getItem('token');
-        try {
-          const res = await fetch(`${API_BASE_URL}/api/admin/ad-approval`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Authorization: `Bearer ${token}`
-            },
-            body: JSON.stringify({
-              auctionId,
-              approve: action === 'approve-ad'
-            })
-          });
-          if (!res.ok) throw new Error('처리 중 오류가 발생했습니다.');
-
-          alert(action === 'approve-ad' ? '승인되었습니다.' : '거부되었습니다.');
-          loadPendingAds();  // 목록 갱신
-          loadApprovedAds();
-        } catch (e) {
-          alert(e.message);
-        }
-      }
-    });
-
-
-    
-
-    // 페이지 처음 로딩 시 로그인 상태 확인 및 UI 업데이트
-    (function init() {
-      const token = localStorage.getItem('token');
-      if (token) {
-        // 토큰에서 유저 정보 직접 디코딩해도 되지만, 서버에서 다시 검증 후 불러오는 게 안전
-        // 임시로 로컬스토리지 기반으로 로그인 상태 처리
-        loggedInUser = { nickname: '유저', isAdmin: false }; 
-        // 실제는 로그인 시 서버에서 받은 유저정보를 저장하거나 다시 요청 필요
-      }
-      updateAuthState();
-      showMainView();
-    })();
-  </script>
-
+        document.addEventListener('DOMContentLoaded', fetchPendingAds);
+    </script>
 </body>
 </html>
-
-
-
-
