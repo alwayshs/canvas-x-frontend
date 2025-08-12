@@ -524,22 +524,28 @@
         }
 
         async function handleCancelWin(auctionId) {
-            if (!confirm(`'${auctionId}' 경매의 낙찰을 포기하시겠습니까? 이 결정은 되돌릴 수 없으며, 차순위 입찰자에게 기회가 넘어갑니다.`)) return;
+            if (!confirm(`'${auctionId}' 경매의 낙찰을 포기하시겠습니까? ...`)) return;
             try {
                 const result = await api(`/api/auctions/${auctionId}/cancel`, { method: 'POST' });
                 alert(result.message);
-                populateWonAuctions(); // FIX: 성공 후 대시보드 목록을 새로고침합니다.
+        
+                // 👇 바로 이 부분이 추가된 핵심 코드입니다.
+                populateWonAuctions(); 
+
             } catch (error) {
                 alert(`낙찰 포기 실패: ${error.message}`);
             }
         }
 
         async function handleRefund(auctionId) {
-            if (!confirm(`'${auctionId}' 광고권에 대한 환불을 요청하시겠습니까? 환불 시 차순위 입찰자에게 기회가 넘어갑니다.`)) return;
+            if (!confirm(`'${auctionId}' 광고권에 대한 환불을 요청하시겠습니까? ...`)) return;
             try {
                 const result = await api(`/api/auctions/${auctionId}/refund`, { method: 'POST' });
                 alert(result.message);
-                populateWonAuctions(); // FIX: 성공 후 대시보드 목록을 새로고침합니다.
+        
+                // 👇 바로 이 부분이 추가된 핵심 코드입니다.
+                populateWonAuctions();
+
             } catch (error) {
                 alert(`환불 요청 실패: ${error.message}`);
             }
@@ -630,6 +636,7 @@
     </script>
 </body>
 </html>
+
 
 
 
