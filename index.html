@@ -212,21 +212,26 @@
 
         async function api(endpoint, options = {}) {
             const token = localStorage.getItem('accessToken');
-            const headers = {
-                'Content-Type': 'application/json',
-                ...options.headers,
-            };
-
+            const headers = { ...options.headers };
             if (token) {
                 headers['Authorization'] = `Bearer ${token}`;
             }
+            if (!(options.body instanceof FormData)) {
+                 headers['Content-Type'] = 'application/json';
+            }
+            
+            // FIX: GET 요청 시 브라우저 캐시를 사용하지 않도록 설정
+            const finalOptions = { ...options, headers };
+            if (!finalOptions.method || finalOptions.method.toUpperCase() === 'GET') {
+                finalOptions.cache = 'no-store';
+            }
 
             try {
-                const response = await fetch(`${API_BASE_URL}${endpoint}`, { ...options, headers });
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, finalOptions);
                 const isJson = response.headers.get('content-type')?.includes('application/json');
                 const data = isJson ? await response.json() : await response.text();
                 if (!response.ok) {
-                    throw new Error(data.message || '서버와 통신 중 오류가 발생했습니다.');
+                    throw new Error(data.message || data || '서버와 통신 중 오류가 발생했습니다.');
                 }
                 return data;
             } catch (error) {
@@ -523,7 +528,7 @@
             try {
                 const result = await api(`/api/auctions/${auctionId}/cancel`, { method: 'POST' });
                 alert(result.message);
-                populateWonAuctions();
+                populateWonAuctions(); // FIX: 성공 후 대시보드 목록을 새로고침합니다.
             } catch (error) {
                 alert(`낙찰 포기 실패: ${error.message}`);
             }
@@ -534,7 +539,7 @@
             try {
                 const result = await api(`/api/auctions/${auctionId}/refund`, { method: 'POST' });
                 alert(result.message);
-                populateWonAuctions();
+                populateWonAuctions(); // FIX: 성공 후 대시보드 목록을 새로고침합니다.
             } catch (error) {
                 alert(`환불 요청 실패: ${error.message}`);
             }
@@ -625,6 +630,7 @@
     </script>
 </body>
 </html>
+
 
 
 
