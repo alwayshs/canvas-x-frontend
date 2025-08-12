@@ -110,12 +110,22 @@
             }
         }
 
+        // --- AUTH LOGIC (localStorage 사용) ---
+        function checkLoginStatus() {
+            const token = localStorage.getItem('accessToken');
+            const userInfo = localStorage.getItem('userInfo');
+            if (token && userInfo) {
+                loggedInUser = JSON.parse(userInfo);
+            }
+        }
+
         // --- INITIALIZATION (결제 확인 로직 추가) ---
         function initializePage() {
             renderStaticContent();
             attachEventListeners();
             handlePaymentConfirmation(); // 페이지 로드 시 결제 완료 건 확인
             checkTodaysAd();
+            checkLoginStatus(); // 페이지 시작 시 로그인 상태 확인
             populateUpcomingAuctions();
             setupHeaderVisibility();
             updateAuthState();
@@ -490,6 +500,7 @@
     </script>
 </body>
 </html>
+
 
 
 
