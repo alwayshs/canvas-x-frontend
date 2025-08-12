@@ -528,9 +528,8 @@
             try {
                 const result = await api(`/api/auctions/${auctionId}/cancel`, { method: 'POST' });
                 alert(result.message);
-        
-                // 👇 바로 이 부분이 추가된 핵심 코드입니다.
-                populateWonAuctions(); 
+
+                await populateWonAuctions();  // 여기에 await 추가
 
             } catch (error) {
                 alert(`낙찰 포기 실패: ${error.message}`);
@@ -542,9 +541,8 @@
             try {
                 const result = await api(`/api/auctions/${auctionId}/refund`, { method: 'POST' });
                 alert(result.message);
-        
-                // 👇 바로 이 부분이 추가된 핵심 코드입니다.
-                populateWonAuctions();
+
+                await populateWonAuctions();  // 여기에 await 추가
 
             } catch (error) {
                 alert(`환불 요청 실패: ${error.message}`);
@@ -636,6 +634,7 @@
     </script>
 </body>
 </html>
+
 
 
 
