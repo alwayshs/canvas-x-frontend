@@ -68,6 +68,7 @@
                         <nav class="hidden md:flex items-center space-x-8">
                             <a href="#how-it-works" class="hover:text-gray-300">How It Works</a>
                             <a href="#archive" class="hover:text-gray-300">The Archive</a>
+                            <button id="adminBtn" style="display:none" onclick="window.location.href='admin.html'">Admin</button>
                         </nav>
                         <div id="auth-container"></div>
                     </div>
@@ -269,6 +270,25 @@
             window.scrollTo(0, 0);
         }
 
+        async function checkAdmin() {
+            try {
+              const res = await fetch('/api/user/login', {
+                headers: {
+                  'Authorization': 'Bearer ' + localStorage.getItem('token')
+                }
+              });
+              if (!res.ok) throw new Error('No auth');
+              const data = await res.json();
+              if (data.isAdmin) {
+                document.getElementById('adminBtn').style.display = 'inline-block';
+              }
+            } catch {
+              // 로그인 안 됐거나 관리자 아님
+            }
+          }
+
+          window.onload = checkAdmin;
+
         async function populateWonAuctions() {
             const container = document.getElementById('won-auctions-list');
             try {
@@ -390,3 +410,4 @@
     </script>
 </body>
 </html>
+
