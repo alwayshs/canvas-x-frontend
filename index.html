@@ -39,7 +39,7 @@
 
     <script>
         const API_BASE_URL = 'https://canvas-x.onrender.com';
-        const TOSS_CLIENT_KEY = 'test_ck_P9BRQmyarYgQW0ewZBlX3J07KzLN';
+        const tossPayments = TossPayments("test_ck_P9BRQmyarYgQW0ewZBlX3J07KzLN");
         let loggedInUser = null; 
         let activeAuctionId = null;
         let auctionInterval;
@@ -68,9 +68,6 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ auctionId, userId: loggedInUser.id })
                 });
-
-                // FIX: TossPayments SDK가 비동기적으로 로드되므로 await를 사용합니다.
-                const tossPayments = await TossPayments(TOSS_CLIENT_KEY);
                 
                 tossPayments.requestPayment('카드', {
                     amount: paymentInfo.amount,
@@ -493,6 +490,7 @@
     </script>
 </body>
 </html>
+
 
 
 
