@@ -388,6 +388,7 @@
             window.scrollTo(0, 0);
         }
 
+        // 낙찰 내역 표시
         async function populateWonAuctions() {
             const container = document.getElementById('won-auctions-list');
             try {
@@ -399,41 +400,26 @@
 
                 container.innerHTML = wonAuctions.map(auction => {
                     const statusInfo = getStatusInfo(auction.status);
-
-                    // 각 버튼 클릭 시 API 호출 후 목록에서 바로 제거
-                    const actionHtml = getActionForStatus(auction.id, auction.status);
-                    const wrappedActionHtml = actionHtml.replace(
-                        /onclick="([^"]+)"/g,
-                        (match, fnCall) => {
-                            // 버튼 클릭 후 원래 함수 호출 + 목록 새로고침
-                            return `onclick="(async()=>{await ${fnCall}; populateWonAuctions();})()"`;
-                        }
-                    );
-
                     return `
-                    <div class="bg-gray-900 border border-gray-800 rounded-lg p-6" id="auction-${auction.id}">
-                        <div class="flex justify-between items-start">
-                            <div>
-                                <p class="text-xl font-bold">
-                                    ${new Date(auction.id).toLocaleDateString('ko-KR', { year:'numeric', month: 'long', day: 'numeric' })}
-                                </p>
-                                <p class="text-gray-400">
-                                    낙찰가: ₩${(auction.final_bid || auction.current_highest_bid).toLocaleString()}
-                                </p>
+                        <div class="bg-gray-900 border border-gray-800 rounded-lg p-6">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <p class="text-xl font-bold">
+                                        ${new Date(auction.id).toLocaleDateString('ko-KR', { year:'numeric', month: 'long', day: 'numeric' })}
+                                    </p>
+                                    <p class="text-gray-400">낙찰가: ₩${(auction.final_bid || auction.current_highest_bid).toLocaleString()}</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="flex items-center justify-end">
+                                        <span class="status-dot ${statusInfo.color}"></span>${statusInfo.text}
+                                    </p>
+                                </div>
                             </div>
-                            <div class="text-right">
-                                <p class="flex items-center justify-end">
-                                    <span class="status-dot ${statusInfo.color}"></span>${statusInfo.text}
-                                </p>
+                            <div class="mt-4 pt-4 border-t border-gray-700">
+                                ${getActionForStatus(auction.id, auction.status)}
                             </div>
-                        </div>
-                        <div class="mt-4 pt-4 border-t border-gray-700">
-                            ${wrappedActionHtml}
-                        </div>
-                    </div>
-                    `;
+                        </div>`;
                 }).join('');
-
             } catch (error) {
                 container.innerHTML = `<p class="text-red-500">낙찰 내역을 불러오는 데 실패했습니다: ${error.message}</p>`;
             }
@@ -558,27 +544,25 @@
             }
         }
 
+        // 낙찰 포기
         async function handleCancelWin(auctionId) {
-            if (!confirm(`'${auctionId}' 경매의 낙찰을 포기하시겠습니까? ...`)) return;
+            if (!confirm(`'${auctionId}' 경매의 낙찰을 포기하시겠습니까?`)) return;
             try {
                 const result = await api(`/api/auctions/${auctionId}/cancel`, { method: 'POST' });
                 alert(result.message);
-
-                await populateWonAuctions();  // 여기에 await 추가
-
+                await populateWonAuctions(); // 상태 변경 후 다시 로딩
             } catch (error) {
                 alert(`낙찰 포기 실패: ${error.message}`);
             }
         }
 
+        // 환불 요청
         async function handleRefund(auctionId) {
-            if (!confirm(`'${auctionId}' 광고권에 대한 환불을 요청하시겠습니까? ...`)) return;
+            if (!confirm(`'${auctionId}' 광고권에 대한 환불을 요청하시겠습니까?`)) return;
             try {
                 const result = await api(`/api/auctions/${auctionId}/refund`, { method: 'POST' });
                 alert(result.message);
-
-                await populateWonAuctions();  // 여기에 await 추가
-
+                await populateWonAuctions(); // 상태 변경 후 다시 로딩
             } catch (error) {
                 alert(`환불 요청 실패: ${error.message}`);
             }
@@ -669,6 +653,7 @@
     </script>
 </body>
 </html>
+
 
 
 
