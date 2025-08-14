@@ -229,9 +229,9 @@
                     case 'cancel-upload': handleCancelUpload(actionTarget.dataset.auctionId); break;
                     case 'show-archive-ad': showArchiveAd(actionTarget.dataset); break;
                     case 'close-archive-modal': closeArchiveModal(); break;
+                    case 'verify-identity': handleIdentityVerification(); break;
                     case 'like-ad': handleLike(actionTarget.dataset.auctionId); break;
                     case 'share': handleShare(actionTarget.dataset.platform); break;
-                    case 'verify-identity': handleIdentityVerification(); break;
                     // FIX: 'navigate' 액션을 추가하여 새 탭에서 링크를 엽니다.
                     case 'navigate':
                         window.open(actionTarget.href, '_blank');
@@ -967,6 +967,7 @@
     </script>
 </body>
 </html>
+
 
 
 
