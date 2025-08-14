@@ -182,20 +182,10 @@
             `;
             auctionPageView.innerHTML = `<header class="fixed top-0 left-0 right-0 z-50 header-blur header-visible"><div class="container mx-auto px-6 py-4 flex justify-between items-center"><a href="#" data-action="show-main-view" class="logo text-2xl font-black tracking-wider">CANVAS X</a><button data-action="show-main-view" class="back-to-main-btn text-gray-300 hover:text-white">&larr; Back to Main</button></div></header><div class="min-h-screen flex items-center justify-center pt-20"><div class="w-full max-w-2xl bg-gray-900 border border-gray-700 rounded-lg p-8 m-4"><h1 class="text-3xl font-bold">Auction for Canvas X</h1><p id="auction-date-title" class="text-xl text-gray-400 mb-6"></p><div class="grid grid-cols-2 gap-4 text-center mb-6"><div><p class="text-sm text-gray-500">현재 최고 입찰가</p><p id="auction-current-bid" class="text-4xl font-bold"></p></div><div><p class="text-sm text-gray-500">경매 마감</p><p id="auction-time-left" class="text-4xl font-bold"></p></div></div><div><label for="bid-amount" class="block text-sm font-medium text-gray-400"></label><div class="mt-1 flex rounded-md shadow-sm"><span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-600 bg-gray-800 text-gray-300 sm:text-sm">₩</span><input type="number" id="bid-amount" class="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md bg-gray-800 border-gray-600"></div></div><button data-action="place-bid" id="place-bid" class="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-md transition-all">입찰하기</button><div class="mt-8"><h2 class="text-lg font-bold mb-2">입찰 기록</h2><div id="auction-bid-history" class="bid-history border border-gray-700 rounded-lg p-3 text-sm space-y-2"></div></div></div></div>`;
             authModal.innerHTML = `<div class="w-full max-w-md bg-gray-900 border border-gray-700 rounded-lg p-8 m-4 relative"><button data-action="close-auth-modal" class="absolute top-4 right-4 text-gray-500 hover:text-white text-2xl">&times;</button><div id="login-form"><h2 class="text-3xl font-bold text-center mb-6">Login</h2><form id="login-form-element"><div class="mb-4"><label for="login-email" class="block text-sm font-medium text-gray-400">Email</label><input type="email" id="login-email" required class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md"></div><div class="mb-6"><label for="login-password" class="block text-sm font-medium text-gray-400">Password</label><input type="password" id="login-password" required class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md"></div><button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-md">Login</button><p class="text-center text-sm text-gray-400 mt-4">Don't have an account? <button type="button" data-action="toggle-auth-form" data-form-type="signup" class="font-medium text-indigo-400 hover:text-indigo-300">Sign Up</button></p></form></div><div id="signup-form" class="hidden"><h2 class="text-3xl font-bold text-center mb-6">Sign Up</h2><form id="signup-form-element"><div class="mb-4"><label for="signup-nickname" class="block text-sm font-medium text-gray-400">Nickname</label><input type="text" id="signup-nickname" required class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md"></div><div class="mb-4"><label for="signup-email" class="block text-sm font-medium text-gray-400">Email</label><input type="email" id="signup-email" required class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md"></div><div class="mb-6"><label for="signup-password" class="block text-sm font-medium text-gray-400">Password</label><input type="password" id="signup-password" required class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md"></div><button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-md">Create Account</button><p class="text-center text-sm text-gray-400 mt-4">Already have an account? <button type="button" data-action="toggle-auth-form" data-form-type="login" class="font-medium text-indigo-400 hover:text-indigo-300">Login</button></p></form></div></div>`;
-            dashboardView.innerHTML = `<header class="fixed top-0 left-0 right-0 z-50 header-blur header-visible"><div class="container mx-auto px-6 py-4 flex justify-between items-center"><a href="#" data-action="show-main-view" class="logo text-2xl font-black tracking-wider">CANVAS X</a><button data-action="show-main-view" class="back-to-main-btn text-gray-300 hover:text-white">&larr; Back to Main</button></div></header><div class="container mx-auto px-6 pt-24 pb-12"><h1 class="text-4xl font-bold">My Dashboard</h1><p class="text-gray-400 mt-2">나의 낙찰 내역을 관리하고 광고를 업로드하세요.</p><div id="won-auctions-list" class="mt-8 space-y-6"></div></div>`;
+            dashboardView.innerHTML = `<header class="fixed top-0 left-0 right-0 z-50 header-blur header-visible"><div class="container mx-auto px-6 py-4 flex justify-between items-center"><a href="#" data-action="show-main-view" class="logo text-2xl font-black tracking-wider">CANVAS X</a><button data-action="show-main-view" class="back-to-main-btn text-gray-300 hover:text-white">&larr; Back to Main</button></div></header><div class="container mx-auto px-6 pt-24 pb-12"><h1 class="text-4xl font-bold">My Dashboard</h1><div class="mt-12"><h2 class="text-2xl font-bold border-b border-gray-700 pb-2 mb-4">참여중인 경매</h2><div id="participating-auctions-list" class="space-y-4"></div></div><div class="mt-12"><h2 class="text-2xl font-bold border-b border-gray-700 pb-2 mb-4">나의 낙찰 내역</h2><div id="won-auctions-list" class="mt-8 space-y-6"></div></div></div>`;
             document.querySelector('#how-it-works').innerHTML = `<div class="text-center"><h2 class="text-3xl md:text-4xl font-bold">How It Works</h2><p class="mt-2 text-gray-400">단 3단계로 당신의 스토리를 세상에 공개하세요.</p></div><div class="mt-16 grid grid-cols-1 md:grid-cols-3 gap-12 text-center"><div class="border border-gray-800 p-8 rounded-xl"><div class="text-5xl font-black text-gray-700">01</div><h3 class="mt-4 text-2xl font-bold">Join the Auction</h3><p class="mt-2 text-gray-400">원하는 날짜의 경매에 참여하여 최고가를 입찰하세요.</p></div><div class="border border-gray-800 p-8 rounded-xl"><div class="text-5xl font-black text-gray-700">02</div><h3 class="mt-4 text-2xl font-bold">Submit Your Canvas</h3><p class="mt-2 text-gray-400">낙찰 후, 당신의 걸작(영상, 이미지 등)을 업로드하고 승인을 받으세요.</p></div><div class="border border-gray-800 p-8 rounded-xl"><div class="text-5xl font-black text-gray-700">03</div><h3 class="mt-4 text-2xl font-bold">Take the Stage</h3><p class="mt-2 text-gray-400">당신의 이야기가 24시간 동안 전 세계를 무대로 펼쳐집니다.</p></div></div>`;
-            document.querySelector('#archive').innerHTML = `<div class="container mx-auto px-6"><div class="text-center"><h2 class="text-3xl md:text-4xl font-bold">The Archive</h2><p class="mt-2 text-gray-400">지난 캔버스에 담겼던 영감의 순간들을 만나보세요.</p></div><div id="archive-container" class="mt-12"></div></div>`;
-            document.querySelector('footer').innerHTML = `
-                <div class="container mx-auto px-6 py-8 text-center text-gray-400">
-                    <p class="text-lg font-bold">CANVAS X</p>
-                    <div class="mt-4 flex justify-center space-x-6">
-                        <a href="contact.html" target="_blank" class="hover:text-white">Contact</a>
-                        <a href="terms.html" target="_blank" class="hover:text-white">Terms of Service</a>
-                        <a href="faq.html" target="_blank" class="hover:text-white">FAQ</a>
-                    </div>
-                    <p class="mt-6 text-sm">&copy; 2025 Canvas X. All Rights Reserved. The stage is yours.</p>
-                </div>
-            `;
+            document.querySelector('#archive').innerHTML = `<div class="container mx-auto px-6"><div class="text-center"><h2 class="text-3xl md:text-4xl font-bold">The Archive</h2><p class="mt-2 text-gray-400">지난 캔버스에 담겼던 영감의 순간들을 만나보세요.</p></div><div class="mt-12 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6"><div class="aspect-w-1 aspect-h-1 archive-item"><img src="https://placehold.co/400x400/1a1a1a/ffffff?text=Aug+09" alt="Archive Aug 09" class="rounded-lg object-cover"></div></div></div>`;
+            document.querySelector('footer').innerHTML = `<div class="container mx-auto px-6 py-8 text-center text-gray-400"><p class="text-lg font-bold">CANVAS X</p><div class="mt-4 flex justify-center space-x-6"><a href="#" class="hover:text-white">Contact</a><a href="#" class="hover:text-white">Terms of Service</a><a href="#" class="hover:text-white">FAQ</a></div><p class="mt-6 text-sm">&copy; 2025 Canvas X. All Rights Reserved. The stage is yours.</p></div>`;
         }
         
         function attachEventListeners() {
@@ -398,13 +388,46 @@
             setupHeaderVisibility(); 
         }
 
+        // --- DASHBOARD LOGIC (수정) ---
         async function showDashboard() {
             if (!loggedInUser) return;
             mainView.classList.add('hidden');
             auctionPageView.classList.add('hidden');
             dashboardView.classList.remove('hidden');
             await populateWonAuctions();
+            await populateParticipatingAuctions(); // 참여중인 경매 목록도 함께 불러옵니다.
             window.scrollTo(0, 0);
+        }
+
+        async function populateParticipatingAuctions() {
+            const container = document.getElementById('participating-auctions-list');
+            try {
+                const participatingAuctions = await api(`/api/users/${loggedInUser.id}/participating-auctions`);
+                if (participatingAuctions.length === 0) {
+                    container.innerHTML = '<p class="text-gray-400">현재 참여하고 있는 경매가 없습니다.</p>';
+                    return;
+                }
+                container.innerHTML = participatingAuctions.map(auction => {
+                    const isHighestBidder = auction.current_highest_bid === auction.my_highest_bid;
+                    const statusClass = isHighestBidder ? 'text-green-400' : 'text-yellow-400';
+                    const statusText = isHighestBidder ? '최고 입찰자' : '입찰 중';
+                    return `
+                        <div class="bg-gray-800 p-4 rounded-lg">
+                            <div class="flex justify-between items-center">
+                                <div>
+                                    <p class="font-bold">${new Date(auction.id).toLocaleDateString('ko-KR', { month: 'long', day: 'numeric' })}</p>
+                                    <p class="text-sm text-gray-400">현재가: ₩${auction.current_highest_bid.toLocaleString()} / 나의 최고 입찰가: ₩${auction.my_highest_bid.toLocaleString()}</p>
+                                </div>
+                                <div class="text-right">
+                                    <p class="${statusClass}">${statusText}</p>
+                                    <button data-action="show-auction-page" data-auction-id="${auction.id}" class="mt-2 text-sm text-indigo-400 hover:underline">경매 바로가기</button>
+                                </div>
+                            </div>
+                        </div>`;
+                }).join('');
+            } catch (error) {
+                container.innerHTML = `<p class="text-red-500">참여중인 경매 내역을 불러오는 데 실패했습니다: ${error.message}</p>`;
+            }
         }
 
         // 낙찰 내역 표시
@@ -765,6 +788,7 @@
     </script>
 </body>
 </html>
+
 
 
 
