@@ -576,6 +576,7 @@
             }
         }
 
+        // --- AUCTION LOGIC (수정) ---
         function updateAuctionDetails(auction, bids) {
             document.getElementById('auction-current-bid').textContent = `₩${(auction.current_highest_bid || 0).toLocaleString()}`;
             
@@ -585,12 +586,12 @@
                 bidHistoryEl.innerHTML += `<p class="text-gray-400 text-center">${bid.nickname}: ₩${bid.amount.toLocaleString()}</p>`;
             });
 
-            const minBid = (auction.current_highest_bid || 0) + 10000;
+            // FIX: 서버에서 계산해준 minimumNextBid 값을 사용합니다.
+            const minBid = auction.minimumNextBid;
             const bidAmountEl = document.getElementById('bid-amount');
             bidAmountEl.placeholder = minBid;
             document.querySelector('#auction-page-view label[for="bid-amount"]').textContent = `입찰 금액 (최소 ₩${minBid.toLocaleString()} 이상)`;
 
-            // FIX: 최고 입찰자 중복 입찰 방지 UI
             const placeBidButton = document.getElementById('place-bid');
             if (loggedInUser && auction.current_winner_id === loggedInUser.id) {
                 placeBidButton.disabled = true;
@@ -754,6 +755,7 @@
     </script>
 </body>
 </html>
+
 
 
 
