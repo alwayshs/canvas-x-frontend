@@ -301,29 +301,6 @@
         }
         function closeAuthModal() { authModal.classList.add('hidden'); }
         
-        async function handleLogin(event) {
-            event.preventDefault();
-            const form = event.target;
-            const email = form.querySelector('#login-email').value;
-            const password = form.querySelector('#login-password').value;
-            try {
-                const data = await api('/api/users/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                });
-                
-                localStorage.setItem('accessToken', data.accessToken);
-                localStorage.setItem('userInfo', JSON.stringify(data.user));
-                loggedInUser = data.user;
-
-                alert(data.message);
-                updateAuthState();
-                closeAuthModal();
-            } catch (error) {
-                alert(`로그인 실패: ${error.message}`);
-            }
-        }
         // --- AUTH LOGIC (본인인증 추가) ---
         // SHA256 해시 생성을 위한 헬퍼 함수
         async function sha256(message) {
@@ -1001,6 +978,7 @@
     </script>
 </body>
 </html>
+
 
 
 
