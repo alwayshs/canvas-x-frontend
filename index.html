@@ -49,6 +49,7 @@
         const auctionPageView = document.getElementById('auction-page-view');
         const dashboardView = document.getElementById('dashboard-view');
         const authModal = document.getElementById('auth-modal');
+        const archiveModal = document.getElementById('archive-modal');
 
         // --- INITIALIZATION ---
         document.addEventListener('DOMContentLoaded', initializePage);
@@ -207,6 +208,8 @@
                     case 'cancel-win': handleCancelWin(actionTarget.dataset.auctionId); break;
                     case 'refund': handleRefund(actionTarget.dataset.auctionId); break;
                     case 'cancel-upload': handleCancelUpload(actionTarget.dataset.auctionId); break;
+                    case 'show-archive-ad': showArchiveAd(actionTarget.dataset); break;
+                    case 'close-archive-modal': closeArchiveModal(); break;
                 }
             });
 
@@ -671,51 +674,41 @@
             timeLeftEl.textContent = output;
         }
 
-        // --- ARCHIVE LOGIC (신규) ---
+        // --- ARCHIVE LOGIC (수정) ---
         async function populateArchive() {
             const container = document.getElementById('archive-container');
             if (!container) return;
-
             try {
                 const archiveData = await api('/api/archive');
                 let html = '';
 
-                // 1. 역대 최고가 낙찰 광고
                 html += '<h3 class="text-2xl font-bold mb-4">역대 최고가 낙찰 광고</h3>';
                 html += '<div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-12">';
                 if (archiveData.topBids && archiveData.topBids.length > 0) {
                     archiveData.topBids.forEach(ad => {
                         html += createArchiveItem(ad, `₩${ad.final_bid.toLocaleString()}`);
                     });
-                } else {
-                    html += '<p class="col-span-full text-gray-400">데이터가 없습니다.</p>';
-                }
+                } else { html += '<p class="col-span-full text-gray-400">데이터가 없습니다.</p>'; }
                 html += '</div>';
 
-                // 2. 지난달 최고의 광고
                 html += '<h3 class="text-2xl font-bold mb-4">지난달 최고의 광고</h3>';
                 html += '<div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-12">';
                 if (archiveData.lastMonthBest && archiveData.lastMonthBest.length > 0) {
                     archiveData.lastMonthBest.forEach(ad => {
                         html += createArchiveItem(ad, `지난달 인기 광고`, ad.likes);
                     });
-                } else {
-                    html += '<p class="col-span-full text-gray-400">데이터가 없습니다.</p>';
-                }
+                } else { html += '<p class="col-span-full text-gray-400">데이터가 없습니다.</p>'; }
                 html += '</div>';
                 
-                // 3. 데이터 기반 기록 보관소
                 html += '<h3 class="text-2xl font-bold mb-4">데이터 기반 기록 보관소</h3>';
                 html += '<div class="grid grid-cols-2 md:grid-cols-5 gap-4">';
                 if (archiveData.records) {
-                     html += createRecordItem(archiveData.records.firstAd, '최초의 광고');
-                     html += createRecordItem(archiveData.records.fiercestAuction, `가장 치열했던 경매 (${archiveData.records.fiercestAuction?.count} bids)`);
-                     html += createRecordItem(archiveData.records.mostParticipantsAuction, `최다 참여자 경매 (${archiveData.records.mostParticipantsAuction?.count} users)`);
-                     html += createRecordItem(archiveData.records.allTimePopular, `역대 최고 인기 광고 (❤️ ${archiveData.records.allTimePopular?.likes.toLocaleString()})`);
-                     html += createRecordItem(archiveData.records.finalHourFrenzy, `마지막 1시간의 라스트 스퍼트 (${archiveData.records.finalHourFrenzy?.count} bids)`);
-                } else {
-                    html += '<p class="col-span-full text-gray-400">데이터가 없습니다.</p>';
-                }
+                     html += createArchiveItem(archiveData.records.firstAd, '최초의 광고');
+                     html += createArchiveItem(archiveData.records.fiercestAuction, `가장 치열했던 경매 (${archiveData.records.fiercestAuction?.count} bids)`);
+                     html += createArchiveItem(archiveData.records.mostParticipantsAuction, `최다 참여자 경매 (${archiveData.records.mostParticipantsAuction?.count} users)`);
+                     html += createArchiveItem(archiveData.records.allTimePopular, `역대 최고 인기 광고 (❤️ ${archiveData.records.allTimePopular?.likes.toLocaleString()})`);
+                     html += createArchiveItem(archiveData.records.finalHourFrenzy, `마지막 1시간의 라스트 스퍼트 (${archiveData.records.finalHourFrenzy?.count} bids)`);
+                } else { html += '<p class="col-span-full text-gray-400">데이터가 없습니다.</p>'; }
                 html += '</div>';
 
                 container.innerHTML = html;
@@ -726,32 +719,42 @@
 
         function createArchiveItem(ad, subtext, likes) {
             if (!ad) return '';
-            const imageUrl = ad.content_url ? `${API_BASE_URL}${ad.content_url}` : `https://placehold.co/400x400/1a1a1a/ffffff?text=${ad.id}`;
+            const imageUrl = ad.content_url ? `${API_BASE_URL}${ad.content_url}` : '';
             const likesHtml = (likes !== undefined) ? `<p class="text-xs text-red-400">❤️ ${likes.toLocaleString()}</p>` : '';
             return `
-                <div class="archive-item">
-                    <img src="${imageUrl}" alt="Archive for ${ad.id}" class="rounded-lg object-cover aspect-square">
-                    <p class="mt-2 text-sm font-bold">${ad.id}</p>
-                    <p class="text-xs text-gray-400">${subtext}</p>
+                <div class="archive-item bg-gray-900 p-4 rounded-lg flex flex-col justify-center items-center aspect-square" 
+                     data-action="show-archive-ad" 
+                     data-image-url="${imageUrl}" 
+                     data-date="${ad.id}">
+                    <p class="text-lg font-bold">${ad.id}</p>
+                    <p class="text-xs text-gray-400 mt-1">${subtext}</p>
                     ${likesHtml}
                 </div>
             `;
         }
 
-        function createRecordItem(ad, title) {
-            if (!ad) return '';
-            const imageUrl = ad.content_url ? `${API_BASE_URL}${ad.content_url}` : `https://placehold.co/400x400/1a1a1a/ffffff?text=${ad.id}`;
-            return `
-                <div class="archive-item">
-                    <img src="${imageUrl}" alt="Record for ${title}" class="rounded-lg object-cover aspect-square">
-                    <p class="mt-2 text-sm font-bold">${title}</p>
-                    <p class="text-xs text-gray-400">${ad.id}</p>
+        function showArchiveAd(dataset) {
+            if (!dataset.imageUrl) {
+                alert('이 날짜에는 업로드된 광고가 없습니다.');
+                return;
+            }
+            archiveModal.innerHTML = `
+                <div class="w-full max-w-4xl max-h-[80vh] bg-black p-4 rounded-lg relative">
+                    <button data-action="close-archive-modal" class="absolute top-2 right-2 text-white text-3xl">&times;</button>
+                    <img src="${dataset.imageUrl}" alt="Archive for ${dataset.date}" class="w-full h-full object-contain">
                 </div>
             `;
+            archiveModal.classList.remove('hidden');
+        }
+
+        function closeArchiveModal() {
+            archiveModal.classList.add('hidden');
+            archiveModal.innerHTML = '';
         }
     </script>
 </body>
 </html>
+
 
 
 
