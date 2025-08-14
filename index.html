@@ -335,18 +335,22 @@
                         method: 'POST',
                         body: JSON.stringify({ txId })
                     });
-                    
+            
                     alert("본인인증에 성공했습니다. 나머지 정보를 입력해주세요.");
                     identityVerificationData = {
                         ci: verificationResult.ci,
-                        di: verificationResult.di
+                        di: verificationResult.di,
+                        birthdate: verificationResult.birthdate // 생년월일 정보 추가
                     };
                     openAuthModal('signup');
                     authModal.querySelector('#identity-verification-step').classList.add('hidden');
                     authModal.querySelector('#signup-form-element').classList.remove('hidden');
 
                 } catch (error) {
+                    // ▼▼▼ 바로 이 부분이 "미성년자" 오류를 처리하는 핵심 코드입니다. ▼▼▼
                     alert(`본인인증 검증 실패: ${error.message}`);
+                    // ▲▲▲ ▲▲▲ ▲▲▲
+
                 } finally {
                     // URL에서 인증 관련 파라미터 제거
                     window.history.replaceState({}, document.title, window.location.pathname);
@@ -958,6 +962,7 @@
     </script>
 </body>
 </html>
+
 
 
 
