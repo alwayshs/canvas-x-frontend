@@ -442,6 +442,27 @@
                 alert(`회원가입 실패: ${error.message}`);
             }
         }
+        async function handleLogin(event) {
+            event.preventDefault();
+            const form = event.target;
+            const email = form.querySelector('#login-email').value;
+            const password = form.querySelector('#login-password').value;
+            try {
+                const data = await api('/api/users/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                localStorage.setItem('accessToken', data.accessToken);
+                localStorage.setItem('userInfo', JSON.stringify(data.user));
+                loggedInUser = data.user;
+                alert(data.message);
+                updateAuthState();
+                closeAuthModal();
+            } catch (error) {
+                alert(`로그인 실패: ${error.message}`);
+            }
+        }
         function handleLogout() {
             localStorage.removeItem('accessToken');
             localStorage.removeItem('userInfo');
@@ -980,6 +1001,7 @@
     </script>
 </body>
 </html>
+
 
 
 
