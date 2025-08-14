@@ -440,22 +440,24 @@
             }
         }
 
-        // --- 광고 자동 게시 및 인기도 시스템 ---
+        // --- 광고 자동 게시 및 인기도 시스템 (수정) ---
         async function checkTodaysAd() {
             const adVisualContainer = document.getElementById('ad-visual-container');
             const countdownContainer = document.getElementById('countdown-display-container');
             const infoSection = document.getElementById('canvas-info-section');
 
             try {
+                // FIX: 이제 시뮬레이션이 아닌, 실제 서버에 오늘의 광고를 요청합니다.
                 const ad = await api('/api/today');
-        
+                
+                // 광고가 있을 경우
                 adVisualContainer.querySelector('#ad-image').src = `${API_BASE_URL}${ad.content_url}`;
                 infoSection.innerHTML = `
                     <p class="text-gray-200 text-lg">${new Date(ad.id).toLocaleDateString('ko-KR')}</p>
                     <div class="flex justify-center items-center space-x-6 mt-4">
                         <div class="flex items-center space-x-2">
                             <button data-action="like-ad" data-auction-id="${ad.id}" class="text-3xl text-red-500 hover:scale-110 transition-transform">❤️</button>
-                            <span id="like-count" class="text-2xl font-bold">${ad.likes.toLocaleString()}</span>
+                            <span id="like-count" class="text-2xl font-bold">${(ad.likes || 0).toLocaleString()}</span>
                         </div>
                         <div class="flex items-center space-x-3">
                             <button data-action="share" data-platform="twitter" class="text-2xl hover:opacity-80 transition-opacity">
@@ -472,6 +474,7 @@
                 countdownContainer.classList.add('hidden');
 
             } catch (error) {
+                // 광고가 없을 경우 (서버가 404 에러를 보냄)
                 countdownContainer.classList.remove('hidden');
                 adVisualContainer.classList.add('hidden');
                 infoSection.classList.add('hidden');
@@ -944,6 +947,7 @@
     </script>
 </body>
 </html>
+
 
 
 
