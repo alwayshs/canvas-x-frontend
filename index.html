@@ -335,17 +335,68 @@
             }
         }
 
-        function checkTodaysAd() {
-            const isAdAvailableToday = false;
-            if (isAdAvailableToday) {
-                document.getElementById('ad-visual-container').classList.remove('hidden');
-                document.getElementById('canvas-info-section').classList.remove('hidden');
-            } else {
-                document.getElementById('countdown-display-container').classList.remove('hidden');
-                document.getElementById('canvas-info-section').classList.add('hidden');
+        // --- 광고 자동 게시 및 인기도 시스템 ---
+        async function checkTodaysAd() {
+            const adVisualContainer = document.getElementById('ad-visual-container');
+            const countdownContainer = document.getElementById('countdown-display-container');
+            const infoSection = document.getElementById('canvas-info-section');
+
+            try {
+                const ad = await api('/api/today');
+        
+                adVisualContainer.querySelector('#ad-image').src = `${API_BASE_URL}${ad.content_url}`;
+                infoSection.innerHTML = `
+                    <p class="text-gray-200 text-lg">${new Date(ad.id).toLocaleDateString('ko-KR')}</p>
+                    <div class="flex justify-center items-center space-x-6 mt-4">
+                        <div class="flex items-center space-x-2">
+                            <button data-action="like-ad" data-auction-id="${ad.id}" class="text-3xl text-red-500 hover:scale-110 transition-transform">❤️</button>
+                            <span id="like-count" class="text-2xl font-bold">${ad.likes.toLocaleString()}</span>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <button data-action="share" data-platform="twitter" class="text-2xl hover:opacity-80 transition-opacity">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="text-white"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                            </button>
+                             <button data-action="share" data-platform="facebook" class="text-2xl hover:opacity-80 transition-opacity">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="text-white"><path d="M13.397 20.997v-8.196h2.765l.411-3.209h-3.176V7.548c0-.926.258-1.56 1.587-1.56h1.684V3.127A22.336 22.336 0 0 0 14.201 3c-2.444 0-4.122 1.492-4.122 4.231v2.355H7.342v3.209h2.739v8.196h3.316z"/></svg>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                adVisualContainer.classList.remove('hidden');
+                infoSection.classList.remove('hidden');
+                countdownContainer.classList.add('hidden');
+
+            } catch (error) {
+                countdownContainer.classList.remove('hidden');
+                adVisualContainer.classList.add('hidden');
+                infoSection.classList.add('hidden');
                 const now = new Date();
                 const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
                 startMainCountdown(tomorrow.getTime());
+            }
+        }
+
+        async function handleLike(auctionId) {
+            if (!loggedInUser) return alert('좋아요를 누르려면 로그인이 필요합니다.');
+            try {
+                const result = await api(`/api/ads/${auctionId}/like`, { method: 'POST' });
+                document.getElementById('like-count').textContent = result.newLikes.toLocaleString();
+            } catch (error) {
+                alert(`오류: ${error.message}`);
+            }
+        }
+
+        function handleShare(platform) {
+            const url = encodeURIComponent(window.location.href);
+            const text = encodeURIComponent(`오늘의 Canvas X 광고를 확인해보세요!`);
+            let shareUrl = '';
+            if (platform === 'twitter') {
+                shareUrl = `https://twitter.com/intent/tweet?url=${url}&text=${text}`;
+            } else if (platform === 'facebook') {
+                shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${url}`;
+            }
+            if(shareUrl) {
+                window.open(shareUrl, '_blank', 'width=600,height=400');
             }
         }
 
@@ -788,6 +839,7 @@
     </script>
 </body>
 </html>
+
 
 
 
