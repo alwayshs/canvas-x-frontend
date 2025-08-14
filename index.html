@@ -166,7 +166,15 @@
                             </div>
                         </section>
                         <section id="how-it-works" class="container mx-auto px-6 py-20"></section>
-                        <section id="archive" class="bg-gray-900/50 py-20"></section>
+                        <section id="archive" class="bg-gray-900/50 py-20">
+                            <div class="container mx-auto px-6">
+                                <div class="text-center">
+                                    <h2 class="text-3xl md:text-4xl font-bold">The Archive</h2>
+                                    <p class="mt-2 text-gray-400">지난 캔버스에 담겼던 영감의 순간들을 만나보세요.</p>
+                                </div>
+                                <div id="archive-container" class="mt-12"></div>
+                            </div>
+                        </section>
                     </div>
                 </main>
                 <footer class="border-t border-gray-800"></footer>
@@ -689,7 +697,7 @@
                 html += '<div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-12">';
                 if (archiveData.lastMonthBest && archiveData.lastMonthBest.length > 0) {
                     archiveData.lastMonthBest.forEach(ad => {
-                        html += createArchiveItem(ad, `지난달 인기 광고`);
+                        html += createArchiveItem(ad, `지난달 인기 광고`, ad.likes);
                     });
                 } else {
                     html += '<p class="col-span-full text-gray-400">데이터가 없습니다.</p>';
@@ -702,7 +710,9 @@
                 if (archiveData.records) {
                      html += createRecordItem(archiveData.records.firstAd, '최초의 광고');
                      html += createRecordItem(archiveData.records.fiercestAuction, `가장 치열했던 경매 (${archiveData.records.fiercestAuction?.count} bids)`);
-                     // ... 다른 기록들도 여기에 추가
+                     html += createRecordItem(archiveData.records.mostParticipantsAuction, `최다 참여자 경매 (${archiveData.records.mostParticipantsAuction?.count} users)`);
+                     html += createRecordItem(archiveData.records.allTimePopular, `역대 최고 인기 광고 (❤️ ${archiveData.records.allTimePopular?.likes.toLocaleString()})`);
+                     html += createRecordItem(archiveData.records.finalHourFrenzy, `마지막 1시간의 광란 (${archiveData.records.finalHourFrenzy?.count} bids)`);
                 } else {
                     html += '<p class="col-span-full text-gray-400">데이터가 없습니다.</p>';
                 }
@@ -714,14 +724,16 @@
             }
         }
 
-        function createArchiveItem(ad, subtext) {
+        function createArchiveItem(ad, subtext, likes) {
             if (!ad) return '';
             const imageUrl = ad.content_url ? `${API_BASE_URL}${ad.content_url}` : `https://placehold.co/400x400/1a1a1a/ffffff?text=${ad.id}`;
+            const likesHtml = (likes !== undefined) ? `<p class="text-xs text-red-400">❤️ ${likes.toLocaleString()}</p>` : '';
             return `
                 <div class="archive-item">
                     <img src="${imageUrl}" alt="Archive for ${ad.id}" class="rounded-lg object-cover aspect-square">
                     <p class="mt-2 text-sm font-bold">${ad.id}</p>
                     <p class="text-xs text-gray-400">${subtext}</p>
+                    ${likesHtml}
                 </div>
             `;
         }
@@ -740,6 +752,7 @@
     </script>
 </body>
 </html>
+
 
 
 
