@@ -210,6 +210,8 @@
                     case 'cancel-upload': handleCancelUpload(actionTarget.dataset.auctionId); break;
                     case 'show-archive-ad': showArchiveAd(actionTarget.dataset); break;
                     case 'close-archive-modal': closeArchiveModal(); break;
+                    case 'like-ad': handleLike(actionTarget.dataset.auctionId); break;
+                    case 'share': handleShare(actionTarget.dataset.platform); break;
                 }
             });
 
@@ -839,6 +841,7 @@
     </script>
 </body>
 </html>
+
 
 
 
