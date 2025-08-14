@@ -15,7 +15,8 @@
         .header { transform: translateY(-100%); transition: transform 0.3s ease-in-out; }
         .header-visible { transform: translateY(0); }
         .header-blur { backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); background-color: rgba(0, 0, 0, 0.5); }
-        .fullscreen-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; overflow: hidden; background-color: #000; }
+        /* FIX: position을 fixed에서 absolute로 변경하여 hero-section 내부에만 있도록 수정 */
+        .fullscreen-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; overflow: hidden; display: flex; align-items: center; justify-content: center; }
         /* FIX: 이미지가 잘리지 않고 원본 비율을 유지하도록 object-fit: contain 으로 변경 */
         .fullscreen-canvas img, .fullscreen-canvas video { width: 100%; height: 100%; object-fit: contain; }
         .hero-section { height: 100vh; position: relative; display: flex; justify-content: center; align-items: center; }
@@ -957,6 +958,7 @@
     </script>
 </body>
 </html>
+
 
 
 
