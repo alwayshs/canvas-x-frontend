@@ -471,13 +471,27 @@
 
             try {
                 const ad = await api('/api/today');
-        
+                todaysAdData = ad; 
+                
+                let alreadyLiked = false;
+                try {
+                    const likedAds = JSON.parse(localStorage.getItem('canvasXLikes')) || {};
+                    const todayStr = new Date().toISOString().slice(0, 10);
+                    alreadyLiked = likedAds[ad.id] === todayStr;
+                } catch (e) {
+                    console.warn("Could not access localStorage. Like feature may not work as expected in private browsing.");
+                }
+
                 adVisualContainer.querySelector('#ad-image').src = `${API_BASE_URL}${ad.content_url}`;
                 infoSection.innerHTML = `
                     <p class="text-gray-200 text-lg">${new Date(ad.id).toLocaleDateString('ko-KR')}</p>
                     <div class="flex justify-center items-center space-x-6 mt-4">
                         <div class="flex items-center space-x-2">
-                            <button data-action="like-ad" data-auction-id="${ad.id}" class="text-3xl text-red-500 hover:scale-110 transition-transform">❤️</button>
+                            <button data-action="like-ad" data-auction-id="${ad.id}" 
+                                    class="text-3xl hover:scale-110 transition-transform ${alreadyLiked ? 'text-red-500' : 'text-gray-500'}"
+                                    ${alreadyLiked ? 'disabled' : ''}>
+                                ❤️
+                            </button>
                             <span id="like-count" class="text-2xl font-bold">${(ad.likes || 0).toLocaleString()}</span>
                         </div>
                         <div class="flex items-center space-x-3">
@@ -505,12 +519,35 @@
         }
 
         async function handleLike(auctionId) {
-            if (!loggedInUser) return alert('좋아요를 누르려면 로그인이 필요합니다.');
+            const likeButton = document.querySelector(`[data-action="like-ad"][data-auction-id="${auctionId}"]`);
+            if (!likeButton || likeButton.disabled) return;
+
+            // FIX: 클릭 즉시 버튼을 비활성화하여 중복 클릭을 방지합니다.
+            likeButton.disabled = true;
+
             try {
+                const likedAds = JSON.parse(localStorage.getItem('canvasXLikes')) || {};
+                const todayStr = new Date().toISOString().slice(0, 10);
+                if (likedAds[auctionId] === todayStr) {
+                    alert("이미 오늘 '좋아요'를 누른 광고입니다.");
+                    return;
+                }
+
                 const result = await api(`/api/ads/${auctionId}/like`, { method: 'POST' });
                 document.getElementById('like-count').textContent = result.newLikes.toLocaleString();
+
+                // '좋아요' 성공 시, 브라우저에 기록 저장
+                likedAds[auctionId] = todayStr;
+                localStorage.setItem('canvasXLikes', JSON.stringify(likedAds));
+
+                // 버튼 색상 변경
+                likeButton.classList.remove('text-gray-500');
+                likeButton.classList.add('text-red-500');
+
             } catch (error) {
                 alert(`오류: ${error.message}`);
+                // FIX: 서버 요청 실패 시, 버튼을 다시 활성화하여 재시도할 수 있도록 합니다.
+                likeButton.disabled = false; 
             }
         }
 
@@ -967,6 +1004,7 @@
     </script>
 </body>
 </html>
+
 
 
 
