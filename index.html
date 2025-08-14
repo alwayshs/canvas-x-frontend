@@ -333,6 +333,7 @@
             const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
             return hashHex;
         }
+
         async function handleIdentityVerification() {
             // 1. KG이니시스 요청을 위한 파라미터 생성 (request.jsp 로직)
             const mid = "INIiasTest";
@@ -383,24 +384,21 @@
             const resultCode = urlParams.get('resultCode');
 
             if (resultCode === '0000' && txId) {
-                // 3. 인증 성공 시, 우리 서버에 최종 검증을 요청 (success.jsp 로직)
-                // 이 API는 다음 단계에서 백엔드에 만들어야 합니다.
+                // 3. 인증 성공 시, 우리 서버에 최종 검증을 요청
                 try {
-                    // const verificationResult = await api('/api/verify-identity', {
-                    //     method: 'POST',
-                    //     body: JSON.stringify({ txId })
-                    // });
+                    const verificationResult = await api('/api/verify-identity', {
+                        method: 'POST',
+                        body: JSON.stringify({ txId })
+                    });
                     
-                    // --- 백엔드 구현 전까지 시뮬레이션 ---
                     alert("본인인증에 성공했습니다. 나머지 정보를 입력해주세요.");
                     identityVerificationData = {
-                        ci: "verified_ci_" + txId,
-                        di: "verified_di_" + txId
+                        ci: verificationResult.ci,
+                        di: verificationResult.di
                     };
                     openAuthModal('signup');
                     authModal.querySelector('#identity-verification-step').classList.add('hidden');
                     authModal.querySelector('#signup-form-element').classList.remove('hidden');
-                    // ------------------------------------
 
                 } catch (error) {
                     alert(`본인인증 검증 실패: ${error.message}`);
@@ -413,6 +411,7 @@
                 window.history.replaceState({}, document.title, window.location.pathname);
             }
         }
+        
         async function handleSignup(event) {
             event.preventDefault();
             
@@ -433,8 +432,8 @@
                         email, 
                         password, 
                         nickname,
-                        ci: identityVerificationData.ci,
-                        di: identityVerificationData.di
+                        ci: identityVerificationData.ci, // 인증 데이터 추가
+                        di: identityVerificationData.di  // 인증 데이터 추가
                     })
                 });
                 alert('회원가입 성공! 이제 로그인해주세요.');
@@ -981,6 +980,7 @@
     </script>
 </body>
 </html>
+
 
 
 
