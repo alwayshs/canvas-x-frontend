@@ -210,10 +210,8 @@
                 const actionTarget = e.target.closest('[data-action]');
                 if (!actionTarget) return;
                 const action = actionTarget.dataset.action;
-                // 링크 이동 외의 모든 data-action은 기본 동작(페이지 이동 등)을 막습니다.
-                if (actionTarget.dataset.action !== 'navigate') {
-                    e.preventDefault();
-                }
+                // FIX: 모든 data-action에 대해 기본 동작을 막습니다.
+                e.preventDefault();
                 
                 switch(action) {
                     case 'open-auth': openAuthModal('login'); break;
@@ -981,6 +979,7 @@
     </script>
 </body>
 </html>
+
 
 
 
