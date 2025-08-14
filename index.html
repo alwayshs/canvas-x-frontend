@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Canvas X - The Stage for One</title>
     <script src="https://js.tosspayments.com/v1/payment"></script>
+    <!-- KG이니시스 본인인증 SDK (실제 운영 시 발급받은 코드로 교체) -->
+    <script src="https://stdpay.inicis.com/stdjs/INIStdPay.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
@@ -43,6 +45,7 @@
         let loggedInUser = null; 
         let activeAuctionId = null;
         let auctionInterval;
+        let identityVerificationData = null; // 본인인증 데이터 저장 변수
 
         // --- DOM ELEMENTS ---
         const mainView = document.getElementById('main-view');
@@ -131,6 +134,7 @@
             setupHeaderVisibility();
             updateAuthState();
             populateArchive(); // 아카이브 데이터 로드
+            handleIdentityVerificationReturn(); // 페이지 로드 시 본인인증 결과 확인
         }
 
         function renderStaticContent() {
@@ -181,7 +185,41 @@
                 <footer class="border-t border-gray-800"></footer>
             `;
             auctionPageView.innerHTML = `<header class="fixed top-0 left-0 right-0 z-50 header-blur header-visible"><div class="container mx-auto px-6 py-4 flex justify-between items-center"><a href="#" data-action="show-main-view" class="logo text-2xl font-black tracking-wider">CANVAS X</a><button data-action="show-main-view" class="back-to-main-btn text-gray-300 hover:text-white">&larr; Back to Main</button></div></header><div class="min-h-screen flex items-center justify-center pt-20"><div class="w-full max-w-2xl bg-gray-900 border border-gray-700 rounded-lg p-8 m-4"><h1 class="text-3xl font-bold">Auction for Canvas X</h1><p id="auction-date-title" class="text-xl text-gray-400 mb-6"></p><div class="grid grid-cols-2 gap-4 text-center mb-6"><div><p class="text-sm text-gray-500">현재 최고 입찰가</p><p id="auction-current-bid" class="text-4xl font-bold"></p></div><div><p class="text-sm text-gray-500">경매 마감</p><p id="auction-time-left" class="text-4xl font-bold"></p></div></div><div><label for="bid-amount" class="block text-sm font-medium text-gray-400"></label><div class="mt-1 flex rounded-md shadow-sm"><span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-600 bg-gray-800 text-gray-300 sm:text-sm">₩</span><input type="number" id="bid-amount" class="flex-1 min-w-0 block w-full px-3 py-2 rounded-none rounded-r-md bg-gray-800 border-gray-600"></div></div><button data-action="place-bid" id="place-bid" class="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-md transition-all">입찰하기</button><div class="mt-8"><h2 class="text-lg font-bold mb-2">입찰 기록</h2><div id="auction-bid-history" class="bid-history border border-gray-700 rounded-lg p-3 text-sm space-y-2"></div></div></div></div>`;
-            authModal.innerHTML = `<div class="w-full max-w-md bg-gray-900 border border-gray-700 rounded-lg p-8 m-4 relative"><button data-action="close-auth-modal" class="absolute top-4 right-4 text-gray-500 hover:text-white text-2xl">&times;</button><div id="login-form"><h2 class="text-3xl font-bold text-center mb-6">Login</h2><form id="login-form-element"><div class="mb-4"><label for="login-email" class="block text-sm font-medium text-gray-400">Email</label><input type="email" id="login-email" required class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md"></div><div class="mb-6"><label for="login-password" class="block text-sm font-medium text-gray-400">Password</label><input type="password" id="login-password" required class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md"></div><button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-md">Login</button><p class="text-center text-sm text-gray-400 mt-4">Don't have an account? <button type="button" data-action="toggle-auth-form" data-form-type="signup" class="font-medium text-indigo-400 hover:text-indigo-300">Sign Up</button></p></form></div><div id="signup-form" class="hidden"><h2 class="text-3xl font-bold text-center mb-6">Sign Up</h2><form id="signup-form-element"><div class="mb-4"><label for="signup-nickname" class="block text-sm font-medium text-gray-400">Nickname</label><input type="text" id="signup-nickname" required class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md"></div><div class="mb-4"><label for="signup-email" class="block text-sm font-medium text-gray-400">Email</label><input type="email" id="signup-email" required class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md"></div><div class="mb-6"><label for="signup-password" class="block text-sm font-medium text-gray-400">Password</label><input type="password" id="signup-password" required class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md"></div><button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-md">Create Account</button><p class="text-center text-sm text-gray-400 mt-4">Already have an account? <button type="button" data-action="toggle-auth-form" data-form-type="login" class="font-medium text-indigo-400 hover:text-indigo-300">Login</button></p></form></div></div>`;
+            authModal.innerHTML = `
+                <div class="w-full max-w-md bg-gray-900 border border-gray-700 rounded-lg p-8 m-4 relative">
+                    <button data-action="close-auth-modal" class="absolute top-4 right-4 text-gray-500 hover:text-white text-2xl">&times;</button>
+                    <!-- Login Form -->
+                    <div id="login-form">
+                        <h2 class="text-3xl font-bold text-center mb-6">Login</h2>
+                        <form id="login-form-element"><!-- ... 로그인 폼 ... --></form>
+                    </div>
+                    <!-- Signup Form -->
+                    <div id="signup-form" class="hidden">
+                        <h2 class="text-3xl font-bold text-center mb-6">Sign Up</h2>
+                        <div id="identity-verification-step">
+                            <p class="text-center text-gray-300 mb-4">안전한 경매를 위해 본인인증이 필요합니다.</p>
+                            <button data-action="verify-identity" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-md transition-all">본인인증하기</button>
+                        </div>
+                        <form id="signup-form-element" class="hidden">
+                            <div class="mb-4">
+                                <label for="signup-nickname" class="block text-sm font-medium text-gray-400">Nickname</label>
+                                <input type="text" id="signup-nickname" required class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md">
+                            </div>
+                            <div class="mb-4">
+                                <label for="signup-email" class="block text-sm font-medium text-gray-400">Email</label>
+                                <input type="email" id="signup-email" required class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md">
+                            </div>
+                            <div class="mb-6">
+                                <label for="signup-password" class="block text-sm font-medium text-gray-400">Password</label>
+                                <input type="password" id="signup-password" required class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md">
+                            </div>
+                            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-md">Create Account</button>
+                        </form>
+                        <p class="text-center text-sm text-gray-400 mt-4">
+                            Already have an account? <button type="button" data-action="toggle-auth-form" data-form-type="login" class="font-medium text-indigo-400 hover:text-indigo-300">Login</button>
+                        </p>
+                    </div>
+                </div>`;
             dashboardView.innerHTML = `<header class="fixed top-0 left-0 right-0 z-50 header-blur header-visible"><div class="container mx-auto px-6 py-4 flex justify-between items-center"><a href="#" data-action="show-main-view" class="logo text-2xl font-black tracking-wider">CANVAS X</a><button data-action="show-main-view" class="back-to-main-btn text-gray-300 hover:text-white">&larr; Back to Main</button></div></header><div class="container mx-auto px-6 pt-24 pb-12"><h1 class="text-4xl font-bold">My Dashboard</h1><div class="mt-12"><h2 class="text-2xl font-bold border-b border-gray-700 pb-2 mb-4">참여중인 경매</h2><div id="participating-auctions-list" class="space-y-4"></div></div><div class="mt-12"><h2 class="text-2xl font-bold border-b border-gray-700 pb-2 mb-4">나의 낙찰 내역</h2><div id="won-auctions-list" class="mt-8 space-y-6"></div></div></div>`;
             document.querySelector('#how-it-works').innerHTML = `<div class="text-center"><h2 class="text-3xl md:text-4xl font-bold">How It Works</h2><p class="mt-2 text-gray-400">단 3단계로 당신의 스토리를 세상에 공개하세요.</p></div><div class="mt-16 grid grid-cols-1 md:grid-cols-3 gap-12 text-center"><div class="border border-gray-800 p-8 rounded-xl"><div class="text-5xl font-black text-gray-700">01</div><h3 class="mt-4 text-2xl font-bold">Join the Auction</h3><p class="mt-2 text-gray-400">원하는 날짜의 경매에 참여하여 최고가를 입찰하세요.</p></div><div class="border border-gray-800 p-8 rounded-xl"><div class="text-5xl font-black text-gray-700">02</div><h3 class="mt-4 text-2xl font-bold">Submit Your Canvas</h3><p class="mt-2 text-gray-400">낙찰 후, 당신의 걸작(영상, 이미지 등)을 업로드하고 승인을 받으세요.</p></div><div class="border border-gray-800 p-8 rounded-xl"><div class="text-5xl font-black text-gray-700">03</div><h3 class="mt-4 text-2xl font-bold">Take the Stage</h3><p class="mt-2 text-gray-400">당신의 이야기가 24시간 동안 전 세계를 무대로 펼쳐집니다.</p></div></div>`;
             document.querySelector('#archive').innerHTML = `<div class="container mx-auto px-6"><div class="text-center"><h2 class="text-3xl md:text-4xl font-bold">The Archive</h2><p class="mt-2 text-gray-400">지난 캔버스에 담겼던 영감의 순간들을 만나보세요.</p></div><div id="archive-container" class="mt-12"></div></div>`;
@@ -212,6 +250,7 @@
                     case 'close-archive-modal': closeArchiveModal(); break;
                     case 'like-ad': handleLike(actionTarget.dataset.auctionId); break;
                     case 'share': handleShare(actionTarget.dataset.platform); break;
+                    case 'verify-identity': handleIdentityVerification(); break;
                 }
             });
 
@@ -285,17 +324,118 @@
                 alert(`로그인 실패: ${error.message}`);
             }
         }
+        // --- AUTH LOGIC (본인인증 추가) ---
+        // SHA256 해시 생성을 위한 헬퍼 함수
+        async function sha256(message) {
+            const msgBuffer = new TextEncoder().encode(message);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            return hashHex;
+        }
+        async function handleIdentityVerification() {
+            // 1. KG이니시스 요청을 위한 파라미터 생성 (request.jsp 로직)
+            const mid = "INIiasTest";
+            const apiKey = "TGdxb2l3enJDWFRTbTgvREU3MGYwUT09";
+            const mTxId = "mTxId_" + new Date().getTime();
+            const authHashPlainText = mid + mTxId + apiKey;
+            const authHash = await sha256(authHashPlainText);
+
+            // 2. 팝업창을 열고 동적으로 폼을 생성하여 전송
+            const popup = window.open('', 'sa_popup', 'width=400,height=640');
+            if (!popup) {
+                alert("팝업 차단을 해제해주세요.");
+                return;
+            }
+
+            const form = document.createElement('form');
+            form.setAttribute('method', 'POST');
+            form.setAttribute('action', 'https://sa.inicis.com/auth');
+            form.setAttribute('target', 'sa_popup');
+
+            const params = {
+                mid: mid,
+                reqSvcCd: "01",
+                mTxId: mTxId,
+                authHash: authHash,
+                flgFixedUser: "N", // 특정 사용자 고정 안함
+                successUrl: window.location.origin + window.location.pathname,
+                failUrl: window.location.origin + window.location.pathname,
+                reservedMsg: "isUseToken=Y"
+            };
+
+            for (const key in params) {
+                const hiddenField = document.createElement('input');
+                hiddenField.setAttribute('type', 'hidden');
+                hiddenField.setAttribute('name', key);
+                hiddenField.setAttribute('value', params[key]);
+                form.appendChild(hiddenField);
+            }
+
+            document.body.appendChild(form);
+            form.submit();
+            document.body.removeChild(form);
+        }
+        
+        async function handleIdentityVerificationReturn() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const txId = urlParams.get('txId');
+            const resultCode = urlParams.get('resultCode');
+
+            if (resultCode === '0000' && txId) {
+                // 3. 인증 성공 시, 우리 서버에 최종 검증을 요청 (success.jsp 로직)
+                // 이 API는 다음 단계에서 백엔드에 만들어야 합니다.
+                try {
+                    // const verificationResult = await api('/api/verify-identity', {
+                    //     method: 'POST',
+                    //     body: JSON.stringify({ txId })
+                    // });
+                    
+                    // --- 백엔드 구현 전까지 시뮬레이션 ---
+                    alert("본인인증에 성공했습니다. 나머지 정보를 입력해주세요.");
+                    identityVerificationData = {
+                        ci: "verified_ci_" + txId,
+                        di: "verified_di_" + txId
+                    };
+                    openAuthModal('signup');
+                    authModal.querySelector('#identity-verification-step').classList.add('hidden');
+                    authModal.querySelector('#signup-form-element').classList.remove('hidden');
+                    // ------------------------------------
+
+                } catch (error) {
+                    alert(`본인인증 검증 실패: ${error.message}`);
+                } finally {
+                    // URL에서 인증 관련 파라미터 제거
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                }
+            } else if (resultCode) {
+                alert(`본인인증 실패: ${urlParams.get('resultMsg')}`);
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        }
         async function handleSignup(event) {
             event.preventDefault();
+            
+            if (!identityVerificationData) {
+                return alert("본인인증을 먼저 진행해주세요.");
+            }
+
             const form = event.target;
             const email = form.querySelector('#signup-email').value;
             const password = form.querySelector('#signup-password').value;
             const nickname = form.querySelector('#signup-nickname').value;
+            
             try {
                 await api('/api/users/signup', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password, nickname })
+                    body: JSON.stringify({ 
+                        email, 
+                        password, 
+                        nickname,
+                        ci: identityVerificationData.ci,
+                        di: identityVerificationData.di
+                    })
                 });
                 alert('회원가입 성공! 이제 로그인해주세요.');
                 openAuthModal('login');
@@ -841,6 +981,7 @@
     </script>
 </body>
 </html>
+
 
 
 
