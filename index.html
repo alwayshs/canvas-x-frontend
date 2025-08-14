@@ -129,6 +129,7 @@
             populateUpcomingAuctions();
             setupHeaderVisibility();
             updateAuthState();
+            populateArchive(); // 아카이브 데이터 로드
         }
 
         function renderStaticContent() {
@@ -174,7 +175,7 @@
             authModal.innerHTML = `<div class="w-full max-w-md bg-gray-900 border border-gray-700 rounded-lg p-8 m-4 relative"><button data-action="close-auth-modal" class="absolute top-4 right-4 text-gray-500 hover:text-white text-2xl">&times;</button><div id="login-form"><h2 class="text-3xl font-bold text-center mb-6">Login</h2><form id="login-form-element"><div class="mb-4"><label for="login-email" class="block text-sm font-medium text-gray-400">Email</label><input type="email" id="login-email" required class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md"></div><div class="mb-6"><label for="login-password" class="block text-sm font-medium text-gray-400">Password</label><input type="password" id="login-password" required class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md"></div><button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-md">Login</button><p class="text-center text-sm text-gray-400 mt-4">Don't have an account? <button type="button" data-action="toggle-auth-form" data-form-type="signup" class="font-medium text-indigo-400 hover:text-indigo-300">Sign Up</button></p></form></div><div id="signup-form" class="hidden"><h2 class="text-3xl font-bold text-center mb-6">Sign Up</h2><form id="signup-form-element"><div class="mb-4"><label for="signup-nickname" class="block text-sm font-medium text-gray-400">Nickname</label><input type="text" id="signup-nickname" required class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md"></div><div class="mb-4"><label for="signup-email" class="block text-sm font-medium text-gray-400">Email</label><input type="email" id="signup-email" required class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md"></div><div class="mb-6"><label for="signup-password" class="block text-sm font-medium text-gray-400">Password</label><input type="password" id="signup-password" required class="mt-1 block w-full px-3 py-2 bg-gray-800 border border-gray-600 rounded-md"></div><button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-md">Create Account</button><p class="text-center text-sm text-gray-400 mt-4">Already have an account? <button type="button" data-action="toggle-auth-form" data-form-type="login" class="font-medium text-indigo-400 hover:text-indigo-300">Login</button></p></form></div></div>`;
             dashboardView.innerHTML = `<header class="fixed top-0 left-0 right-0 z-50 header-blur header-visible"><div class="container mx-auto px-6 py-4 flex justify-between items-center"><a href="#" data-action="show-main-view" class="logo text-2xl font-black tracking-wider">CANVAS X</a><button data-action="show-main-view" class="back-to-main-btn text-gray-300 hover:text-white">&larr; Back to Main</button></div></header><div class="container mx-auto px-6 pt-24 pb-12"><h1 class="text-4xl font-bold">My Dashboard</h1><p class="text-gray-400 mt-2">나의 낙찰 내역을 관리하고 광고를 업로드하세요.</p><div id="won-auctions-list" class="mt-8 space-y-6"></div></div>`;
             document.querySelector('#how-it-works').innerHTML = `<div class="text-center"><h2 class="text-3xl md:text-4xl font-bold">How It Works</h2><p class="mt-2 text-gray-400">단 3단계로 당신의 스토리를 세상에 공개하세요.</p></div><div class="mt-16 grid grid-cols-1 md:grid-cols-3 gap-12 text-center"><div class="border border-gray-800 p-8 rounded-xl"><div class="text-5xl font-black text-gray-700">01</div><h3 class="mt-4 text-2xl font-bold">Join the Auction</h3><p class="mt-2 text-gray-400">원하는 날짜의 경매에 참여하여 최고가를 입찰하세요.</p></div><div class="border border-gray-800 p-8 rounded-xl"><div class="text-5xl font-black text-gray-700">02</div><h3 class="mt-4 text-2xl font-bold">Submit Your Canvas</h3><p class="mt-2 text-gray-400">낙찰 후, 당신의 걸작(영상, 이미지 등)을 업로드하고 승인을 받으세요.</p></div><div class="border border-gray-800 p-8 rounded-xl"><div class="text-5xl font-black text-gray-700">03</div><h3 class="mt-4 text-2xl font-bold">Take the Stage</h3><p class="mt-2 text-gray-400">당신의 이야기가 24시간 동안 전 세계를 무대로 펼쳐집니다.</p></div></div>`;
-            document.querySelector('#archive').innerHTML = `<div class="container mx-auto px-6"><div class="text-center"><h2 class="text-3xl md:text-4xl font-bold">The Archive</h2><p class="mt-2 text-gray-400">지난 캔버스에 담겼던 영감의 순간들을 만나보세요.</p></div><div class="mt-12 grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6"><div class="aspect-w-1 aspect-h-1 archive-item"><img src="https://placehold.co/400x400/1a1a1a/ffffff?text=Aug+09" alt="Archive Aug 09" class="rounded-lg object-cover"></div></div></div>`;
+            document.querySelector('#archive').innerHTML = `<div class="container mx-auto px-6"><div class="text-center"><h2 class="text-3xl md:text-4xl font-bold">The Archive</h2><p class="mt-2 text-gray-400">지난 캔버스에 담겼던 영감의 순간들을 만나보세요.</p></div><div id="archive-container" class="mt-12"></div></div>`;
             document.querySelector('footer').innerHTML = `<div class="container mx-auto px-6 py-8 text-center text-gray-400"><p class="text-lg font-bold">CANVAS X</p><div class="mt-4 flex justify-center space-x-6"><a href="#" class="hover:text-white">Contact</a><a href="#" class="hover:text-white">Terms of Service</a><a href="#" class="hover:text-white">FAQ</a></div><p class="mt-6 text-sm">&copy; 2025 Canvas X. All Rights Reserved. The stage is yours.</p></div>`;
         }
         
@@ -661,9 +662,85 @@
             output += `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
             timeLeftEl.textContent = output;
         }
+
+        // --- ARCHIVE LOGIC (신규) ---
+        async function populateArchive() {
+            const container = document.getElementById('archive-container');
+            if (!container) return;
+
+            try {
+                const archiveData = await api('/api/archive');
+                let html = '';
+
+                // 1. 역대 최고가 낙찰 광고
+                html += '<h3 class="text-2xl font-bold mb-4">역대 최고가 낙찰 광고</h3>';
+                html += '<div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-12">';
+                if (archiveData.topBids && archiveData.topBids.length > 0) {
+                    archiveData.topBids.forEach(ad => {
+                        html += createArchiveItem(ad, `₩${ad.final_bid.toLocaleString()}`);
+                    });
+                } else {
+                    html += '<p class="col-span-full text-gray-400">데이터가 없습니다.</p>';
+                }
+                html += '</div>';
+
+                // 2. 지난달 최고의 광고
+                html += '<h3 class="text-2xl font-bold mb-4">지난달 최고의 광고</h3>';
+                html += '<div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-12">';
+                if (archiveData.lastMonthBest && archiveData.lastMonthBest.length > 0) {
+                    archiveData.lastMonthBest.forEach(ad => {
+                        html += createArchiveItem(ad, `지난달 인기 광고`);
+                    });
+                } else {
+                    html += '<p class="col-span-full text-gray-400">데이터가 없습니다.</p>';
+                }
+                html += '</div>';
+                
+                // 3. 데이터 기반 기록 보관소
+                html += '<h3 class="text-2xl font-bold mb-4">데이터 기반 기록 보관소</h3>';
+                html += '<div class="grid grid-cols-2 md:grid-cols-5 gap-4">';
+                if (archiveData.records) {
+                     html += createRecordItem(archiveData.records.firstAd, '최초의 광고');
+                     html += createRecordItem(archiveData.records.fiercestAuction, `가장 치열했던 경매 (${archiveData.records.fiercestAuction?.count} bids)`);
+                     // ... 다른 기록들도 여기에 추가
+                } else {
+                    html += '<p class="col-span-full text-gray-400">데이터가 없습니다.</p>';
+                }
+                html += '</div>';
+
+                container.innerHTML = html;
+            } catch (error) {
+                container.innerHTML = `<p class="text-red-500">아카이브를 불러오는 중 오류가 발생했습니다: ${error.message}</p>`;
+            }
+        }
+
+        function createArchiveItem(ad, subtext) {
+            if (!ad) return '';
+            const imageUrl = ad.content_url ? `${API_BASE_URL}${ad.content_url}` : `https://placehold.co/400x400/1a1a1a/ffffff?text=${ad.id}`;
+            return `
+                <div class="archive-item">
+                    <img src="${imageUrl}" alt="Archive for ${ad.id}" class="rounded-lg object-cover aspect-square">
+                    <p class="mt-2 text-sm font-bold">${ad.id}</p>
+                    <p class="text-xs text-gray-400">${subtext}</p>
+                </div>
+            `;
+        }
+
+        function createRecordItem(ad, title) {
+            if (!ad) return '';
+            const imageUrl = ad.content_url ? `${API_BASE_URL}${ad.content_url}` : `https://placehold.co/400x400/1a1a1a/ffffff?text=${ad.id}`;
+            return `
+                <div class="archive-item">
+                    <img src="${imageUrl}" alt="Record for ${title}" class="rounded-lg object-cover aspect-square">
+                    <p class="mt-2 text-sm font-bold">${title}</p>
+                    <p class="text-xs text-gray-400">${ad.id}</p>
+                </div>
+            `;
+        }
     </script>
 </body>
 </html>
+
 
 
 
