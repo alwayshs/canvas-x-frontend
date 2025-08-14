@@ -678,7 +678,7 @@
             const now = new Date();
             
             const refundButtonHtml = (now < refundDeadline)
-                ? `<button data-action="refund" data-auction-id="${id}" class="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded-md text-xs transition">환불 요청 (오늘 17시까지)</button>`
+                ? `<button data-action="refund" data-auction-id="${id}" class="bg-red-600 hover:bg-red-700 text-white font-bold py-1 px-3 rounded-md text-xs transition">환불 요청 (경매 당일 17시까지)</button>`
                 : '';
 
             switch(status) {
@@ -981,6 +981,7 @@
     </script>
 </body>
 </html>
+
 
 
 
