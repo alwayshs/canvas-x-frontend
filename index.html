@@ -712,7 +712,7 @@
                      html += createRecordItem(archiveData.records.fiercestAuction, `가장 치열했던 경매 (${archiveData.records.fiercestAuction?.count} bids)`);
                      html += createRecordItem(archiveData.records.mostParticipantsAuction, `최다 참여자 경매 (${archiveData.records.mostParticipantsAuction?.count} users)`);
                      html += createRecordItem(archiveData.records.allTimePopular, `역대 최고 인기 광고 (❤️ ${archiveData.records.allTimePopular?.likes.toLocaleString()})`);
-                     html += createRecordItem(archiveData.records.finalHourFrenzy, `마지막 1시간의 광란 (${archiveData.records.finalHourFrenzy?.count} bids)`);
+                     html += createRecordItem(archiveData.records.finalHourFrenzy, `마지막 1시간의 라스트 스퍼트 (${archiveData.records.finalHourFrenzy?.count} bids)`);
                 } else {
                     html += '<p class="col-span-full text-gray-400">데이터가 없습니다.</p>';
                 }
@@ -752,6 +752,7 @@
     </script>
 </body>
 </html>
+
 
 
 
