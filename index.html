@@ -191,7 +191,18 @@
             dashboardView.innerHTML = `<header class="fixed top-0 left-0 right-0 z-50 header-blur header-visible"><div class="container mx-auto px-6 py-4 flex justify-between items-center"><a href="#" data-action="show-main-view" class="logo text-2xl font-black tracking-wider">CANVAS X</a><button data-action="show-main-view" class="back-to-main-btn text-gray-300 hover:text-white">&larr; Back to Main</button></div></header><div class="container mx-auto px-6 pt-24 pb-12"><h1 class="text-4xl font-bold">My Dashboard</h1><div class="mt-12"><h2 class="text-2xl font-bold border-b border-gray-700 pb-2 mb-4">참여중인 경매</h2><div id="participating-auctions-list" class="space-y-4"></div></div><div class="mt-12"><h2 class="text-2xl font-bold border-b border-gray-700 pb-2 mb-4">나의 낙찰 내역</h2><div id="won-auctions-list" class="mt-8 space-y-6"></div></div></div>`;
             document.querySelector('#how-it-works').innerHTML = `<div class="text-center"><h2 class="text-3xl md:text-4xl font-bold">How It Works</h2><p class="mt-2 text-gray-400">단 3단계로 당신의 스토리를 세상에 공개하세요.</p></div><div class="mt-16 grid grid-cols-1 md:grid-cols-3 gap-12 text-center"><div class="border border-gray-800 p-8 rounded-xl"><div class="text-5xl font-black text-gray-700">01</div><h3 class="mt-4 text-2xl font-bold">Join the Auction</h3><p class="mt-2 text-gray-400">원하는 날짜의 경매에 참여하여 최고가를 입찰하세요.</p></div><div class="border border-gray-800 p-8 rounded-xl"><div class="text-5xl font-black text-gray-700">02</div><h3 class="mt-4 text-2xl font-bold">Submit Your Canvas</h3><p class="mt-2 text-gray-400">낙찰 후, 당신의 걸작(영상, 이미지 등)을 업로드하고 승인을 받으세요.</p></div><div class="border border-gray-800 p-8 rounded-xl"><div class="text-5xl font-black text-gray-700">03</div><h3 class="mt-4 text-2xl font-bold">Take the Stage</h3><p class="mt-2 text-gray-400">당신의 이야기가 24시간 동안 전 세계를 무대로 펼쳐집니다.</p></div></div>`;
             document.querySelector('#archive').innerHTML = `<div class="container mx-auto px-6"><div class="text-center"><h2 class="text-3xl md:text-4xl font-bold">The Archive</h2><p class="mt-2 text-gray-400">지난 캔버스에 담겼던 영감의 순간들을 만나보세요.</p></div><div id="archive-container" class="mt-12"></div></div>`;
-            document.querySelector('footer').innerHTML = `<div class="container mx-auto px-6 py-8 text-center text-gray-400"><p class="text-lg font-bold">CANVAS X</p><div class="mt-4 flex justify-center space-x-6"><a href="#" class="hover:text-white">Contact</a><a href="#" class="hover:text-white">Terms of Service</a><a href="#" class="hover:text-white">FAQ</a></div><p class="mt-6 text-sm">&copy; 2025 Canvas X. All Rights Reserved. The stage is yours.</p></div>`;
+            // FIX: 푸터 링크에 data-action 속성을 추가합니다.
+            document.querySelector('footer').innerHTML = `
+                <div class="container mx-auto px-6 py-8 text-center text-gray-400">
+                    <p class="text-lg font-bold">CANVAS X</p>
+                    <div class="mt-4 flex justify-center space-x-6">
+                        <a href="contact.html" data-action="navigate" class="hover:text-white">Contact</a>
+                        <a href="terms.html" data-action="navigate" class="hover:text-white">Terms of Service</a>
+                        <a href="faq.html" data-action="navigate" class="hover:text-white">FAQ</a>
+                    </div>
+                    <p class="mt-6 text-sm">&copy; 2025 Canvas X. All Rights Reserved. The stage is yours.</p>
+                </div>
+            `;
         }
         
         function attachEventListeners() {
@@ -199,6 +210,10 @@
                 const actionTarget = e.target.closest('[data-action]');
                 if (!actionTarget) return;
                 const action = actionTarget.dataset.action;
+                // 링크 이동 외의 모든 data-action은 기본 동작(페이지 이동 등)을 막습니다.
+                if (actionTarget.dataset.action !== 'navigate') {
+                    e.preventDefault();
+                }
                 
                 switch(action) {
                     case 'open-auth': openAuthModal('login'); break;
@@ -219,6 +234,10 @@
                     case 'like-ad': handleLike(actionTarget.dataset.auctionId); break;
                     case 'share': handleShare(actionTarget.dataset.platform); break;
                     case 'verify-identity': handleIdentityVerification(); break;
+                    // FIX: 'navigate' 액션을 추가하여 새 탭에서 링크를 엽니다.
+                    case 'navigate':
+                        window.open(actionTarget.href, '_blank');
+                        break;
                 }
             });
 
@@ -962,6 +981,7 @@
     </script>
 </body>
 </html>
+
 
 
 
